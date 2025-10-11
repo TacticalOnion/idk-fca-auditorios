@@ -9,14 +9,14 @@ Este proyecto responde a la necesidad institucional de gestionar los auditorios 
 
 El sistema contempla dos tipos de usuarios principales:
 
-* 👤 Funcionarios: pueden realizar y dar seguimiento a reservaciones, solicitar equipamiento especializado, subir información de los ponentes y obtener comprobantes de sus eventos aprobados.
+* 👤 **Funcionarios**: pueden realizar y dar seguimiento a reservaciones, solicitar equipamiento especializado, subir información de los ponentes y obtener comprobantes de sus eventos aprobados.
 
-* 🛠️ Administradores: pueden gestionar reservaciones y usuarios, consultar registros históricos, filtrar información y exportar reportes en formato PDF o XLS.
+* 🛠️ **Administradores**: pueden gestionar reservaciones y usuarios, consultar registros históricos, filtrar información y exportar reportes en formato PDF o XLS.
 
-Con estas funcionalidades, FCA Auditorios permite:
-* Reducir los tiempos de gestión y aprobación de recintos.
-* Garantizar trazabilidad y transparencia en las reservaciones.
-* Mejorar la comunicación entre las áreas involucradas en la organización de eventos.
+Con estas funcionalidades, `FCA Auditorios` permite:
+✅ Reducir los tiempos de gestión y aprobación de recintos.
+✅ Garantizar trazabilidad y transparencia en las reservaciones.
+✅ Mejorar la comunicación entre las áreas involucradas en la organización de eventos.
 
 La solución se construyó bajo el enfoque de producto mínimo viable (MVP), siguiendo las fases y lineamientos del hackathon.
 
