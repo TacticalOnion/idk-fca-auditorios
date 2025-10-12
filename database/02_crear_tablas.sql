@@ -17,6 +17,9 @@ COMMENT ON COLUMN public.permiso.recurso IS 'Recurso al que se le asigna el perm
 COMMENT ON COLUMN public.permiso.accion IS 'Acción que se permite realizar sobre el recurso (por ejemplo: crear, leer, editar, eliminar)';
 COMMENT ON COLUMN public.permiso.alcance IS 'Alcance del permiso (por ejemplo: global, propietario)';
 COMMENT ON COLUMN public.permiso.descripcion IS 'Descipcion de la función que otorga al usuario el permiso';
+COMMENT ON CONSTRAINT ck_permiso_accion ON public.permiso IS 'Se asegura de que la acción sea una de las permitidas';
+COMMENT ON CONSTRAINT ck_permiso_alcance ON public.permiso IS 'Se asegura de que el alcance sea uno de los permitidos';
+COMMENT ON CONSTRAINT uq_permiso ON public.permiso IS 'Se asegura de que no haya permisos duplicados para un mismo recurso, acción y alcance';
 
  -- Tabla: rol_usuario
 CREATE TABLE IF NOT EXISTS public.rol_usuario (
@@ -27,6 +30,7 @@ CREATE TABLE IF NOT EXISTS public.rol_usuario (
 COMMENT ON TABLE public.rol_usuario IS 'Registra los tipos de roles que puede tener un usuario';
 COMMENT ON COLUMN public.rol_usuario.id_rol_usuario IS 'Identificador del rol de usuario';
 COMMENT ON COLUMN public.rol_usuario.nombre IS 'Nombre del rol de usuario';
+COMMENT ON CONSTRAINT uq_rol_usuario_nombre ON public.rol_usuario.nombre IS 'Se asegura de que no haya dos roles de usuario con el mismo nombre';
 
 -- Tabla: area
 CREATE TABLE IF NOT EXISTS public.area (
@@ -43,6 +47,7 @@ COMMENT ON COLUMN public.area.nombre IS 'Nombre del area';
 COMMENT ON COLUMN public.area.nombre_responsable IS 'Nombre del responsable del area';
 COMMENT ON COLUMN public.area.correo_responsable IS 'Correo de contacto del responsable';
 COMMENT ON COLUMN public.area.activo IS 'Indica si el area esta activa o no';
+COMMENT ON CONSTRAINT uq_area_nombre ON public.area.nombre IS 'Se asegura de que no haya dos areas con el mismo nombre';
 
 -- Tabla: rol_participacion
 CREATE TABLE IF NOT EXISTS public.rol_participacion (
@@ -53,6 +58,7 @@ CREATE TABLE IF NOT EXISTS public.rol_participacion (
 COMMENT ON TABLE public.rol_participacion IS 'Registra los tipos de roles que puede tener un integrante al participar en un evento';
 COMMENT ON COLUMN public.rol_participacion.id_rol_participacion IS 'Rol del integrante al participar en un evento';
 COMMENT ON COLUMN public.rol_participacion.nombre IS 'Nombre del rol';
+COMMENT ON CONSTRAINT uq_rol_participacion_nombre ON public.rol_participacion.nombre IS 'Se asegura de que no haya dos roles de participacion con el mismo nombre';
 
 -- Tabla: nivel
 CREATE TABLE IF NOT EXISTS public.nivel (
@@ -65,6 +71,8 @@ COMMENT ON TABLE public.nivel IS 'Nivel de educación de un grado academico, por
 COMMENT ON COLUMN public.nivel.id_nivel IS 'Identificador del nivel de un grado academico';
 COMMENT ON COLUMN public.nivel.nombre IS 'Nombre del nivel de un grado academico';
 COMMENT ON COLUMN public.nivel.siglas IS 'Siglas del nivel de un grado academico';
+COMMENT ON CONSTRAINT uq_nivel_nombre ON public.nivel.nombre IS 'Se asegura de que no haya dos niveles con el mismo nombre';
+COMMENT ON CONSTRAINT uq_nivel_siglas ON public.nivel.siglas IS 'Se asegura de que no haya dos niveles con las mismas siglas';
 
 -- Tabla: institucion
 CREATE TABLE IF NOT EXISTS public.institucion (
@@ -77,6 +85,8 @@ COMMENT ON TABLE public.institucion IS 'Catálogo de instituciones academicas';
 COMMENT ON COLUMN public.institucion.id_institucion IS 'Identificador de la institución academica';
 COMMENT ON COLUMN public.institucion.nombre IS 'Nombre de la institución academica';
 COMMENT ON COLUMN public.institucion.siglas IS 'Siglas del nombre de la institución academica';
+COMMENT ON CONSTRAINT uq_institucion_nombre ON public.institucion.nombre IS 'Se asegura de que no haya dos instituciones con el mismo nombre';
+COMMENT ON CONSTRAINT uq_institucion_siglas ON public.institucion.siglas IS 'Se asegura de que no haya dos instituciones con las mismas siglas';
 
 -- Tabla: categoria
 CREATE TABLE IF NOT EXISTS public.categoria (
@@ -87,6 +97,7 @@ CREATE TABLE IF NOT EXISTS public.categoria (
 COMMENT ON TABLE public.categoria IS 'Registra las categorias en las que se puede clasificar un evento';
 COMMENT ON COLUMN public.categoria.id_categoria IS 'Identificador de la categoria en la que se puede clasificar el evento';
 COMMENT ON COLUMN public.categoria.nombre IS 'Nombre de la categoria';
+COMMENT ON CONSTRAINT uq_categoria_nombre ON public.categoria.nombre IS 'Se asegura de que no haya dos categorias con el mismo nombre';
 
 -- Tabla: integrante
 CREATE TABLE IF NOT EXISTS public.integrante (
@@ -105,6 +116,7 @@ COMMENT ON COLUMN public.integrante.apellido_paterno IS 'Apellido paterno del in
 COMMENT ON COLUMN public.integrante.apellido_materno IS 'Apellido materno del integrante';
 COMMENT ON COLUMN public.integrante.semblanza IS 'Ruta del archivo pdf donde se almacena la semblanza del integrante';
 COMMENT ON CONSTRAINT uq_integrante_nombre_completo ON public.integrante IS 'Se asegura de que no haya dos registros de una misma persona en el catálogo de personas';
+COMMENT ON CONSTRAINT uq_integrante_semblanza ON public.integrante.semblanza IS 'Se asegura de que no haya dos integrantes con la misma semblanza';
 
 -- Tabla: pais
 CREATE TABLE IF NOT EXISTS public.pais (
@@ -115,6 +127,7 @@ CREATE TABLE IF NOT EXISTS public.pais (
 COMMENT ON TABLE public.pais IS 'Catálogo de paises';
 COMMENT ON COLUMN public.pais.id_pais IS 'Identificador del país';
 COMMENT ON COLUMN public.pais.nombre IS 'Nombre del país';
+COMMENT ON CONSTRAINT uq_pais_nombre ON public.pais.nombre IS 'Se asegura de que no haya dos paises con el mismo nombre';
 
 -- Tabla: estatus
 CREATE TABLE IF NOT EXISTS public.estatus (
@@ -125,6 +138,7 @@ CREATE TABLE IF NOT EXISTS public.estatus (
 COMMENT ON TABLE public.estatus IS 'Catálogo de posibles estados que puede tener una reservación';
 COMMENT ON COLUMN public.estatus.id_estatus IS 'Identificador del estatus de una reservación';
 COMMENT ON COLUMN public.estatus.nombre IS 'Nombre del estatus';
+COMMENT ON CONSTRAINT uq_estatus_nombre ON public.estatus.nombre IS 'Se asegura de que no haya dos estatus con el mismo nombre';
 
 -- Tabla: tipo
 CREATE TABLE IF NOT EXISTS public.tipo (
@@ -135,6 +149,7 @@ CREATE TABLE IF NOT EXISTS public.tipo (
 COMMENT ON TABLE public.tipo IS 'Registra los tipos en los que se puede clasificar un recinto';
 COMMENT ON COLUMN public.tipo.id_tipo IS 'Identificador del tipo en el que se clasifica un recinto';
 COMMENT ON COLUMN public.tipo.nombre IS 'Nombre del recinto';
+COMMENT ON CONSTRAINT uq_tipo_nombre ON public.tipo.nombre IS 'Se asegura de que no haya dos tipos de recinto con el mismo nombre';
 
 -- TABLAS PADRE-HIJA
 -- Tabla: puesto
@@ -151,6 +166,7 @@ COMMENT ON COLUMN public.puesto.id_puesto IS 'Identificador del puesto en la fac
 COMMENT ON COLUMN public.puesto.nombre IS 'Nombre del puesto';
 COMMENT ON COLUMN public.puesto.activo IS 'Indica si el puesto esta activo o no';
 COMMENT ON COLUMN public.puesto.id_area IS 'Identificador del area al que pertenece el puesto';
+COMMENT ON CONSTRAINT uq_puesto_nombre ON public.puesto.nombre IS 'Se asegura de que no haya dos puestos con el mismo nombre';
 
 -- Tabla: usuario
 CREATE TABLE IF NOT EXISTS public.usuario (
@@ -174,6 +190,7 @@ CREATE TABLE IF NOT EXISTS public.usuario (
 );
 COMMENT ON TABLE public.usuario IS 'Registra los usuarios del sistema de gestión de recintos';
 COMMENT ON COLUMN public.usuario.id_usuario IS 'Identificador del usuario del sistema';
+COMMENT ON COLUMN public.usuario.foto_usuario IS 'Ruta del archivo que almacena la foto del usuario';
 COMMENT ON COLUMN public.usuario.nombre_usuario IS 'Nombre de usuario';
 COMMENT ON COLUMN public.usuario.rfc IS 'RFC del usuario';
 COMMENT ON COLUMN public.usuario.nombre IS 'Nombre del usuario';
@@ -186,6 +203,11 @@ COMMENT ON COLUMN public.usuario.correo IS 'Correo de contacto del usuario';
 COMMENT ON COLUMN public.usuario.activo IS 'Indica si el usuario es activo o no';
 COMMENT ON COLUMN public.usuario.id_rol_usuario IS 'Identificador del rol del usuario';
 COMMENT ON COLUMN public.usuario.id_puesto IS 'Identificador del puesto del usuario';
+COMMENT ON CONSTRAINT uq_usuario_nombre_usuario ON public.usuario.nombre_usuario IS 'Se asegura de que no haya dos usuarios con el mismo nombre de usuario';
+COMMENT ON CONSTRAINT uq_usuario_rfc ON public.usuario.rfc IS 'Se asegura de que no haya dos usuarios con el mismo RFC';
+COMMENT ON CONSTRAINT uq_usuario_telefono ON public.usuario.telefono IS 'Se asegura de que no haya dos usuarios con el mismo telefono';
+COMMENT ON CONSTRAINT uq_usuario_celular ON public.usuario.celular IS 'Se asegura de que no haya dos usuarios con el mismo celular';
+COMMENT ON CONSTRAINT uq_usuario_correo ON public.usuario.correo IS 'Se asegura de que no haya dos usuarios con el mismo correo';
 
 -- Tabla: evento
 CREATE TABLE IF NOT EXISTS public.evento (
@@ -227,6 +249,11 @@ COMMENT ON COLUMN public.evento.mega_evento IS 'Indica si el evento es un mega e
 COMMENT ON COLUMN public.evento.id_estatus IS 'Identificador del estatus de la aprobación del evento';
 COMMENT ON COLUMN public.evento.id_categoria IS 'Identificador de la categoria en la que se clasifica el evento';
 COMMENT ON COLUMN public.evento.id_mega_evento IS 'Identificador del evento al que pertenece el evento. Sirve para casos en donde un evento agrupa otros eventos';
+COMMENT ON CONSTRAINT uq_evento_nombre ON public.evento.nombre IS 'Se asegura de que no haya dos eventos con el mismo nombre';
+COMMENT ON CONSTRAINT ck_rango_fechas ON public.evento IS 'Se asegura de que la fecha de inicio no sea posterior a la fecha de fin';
+COMMENT ON CONSTRAINT ck_rango_horarios ON public.evento IS 'Se asegura de que la hora de inicio sea anterior a la hora de fin';
+COMMENT ON CONSTRAINT ck_horario_laboral ON public.evento IS 'Se asegura de que el evento se realice dentro del horario laboral (07:00 a 22:00)';
+COMMENT ON CONSTRAINT ck_duracion_evento ON public.evento IS 'Se asegura de que el evento tenga una duración mínima de 30 minutos si es en un solo día';
 
 -- Tabla: grado
 CREATE TABLE IF NOT EXISTS public.grado (
@@ -262,6 +289,8 @@ COMMENT ON COLUMN public.equipamiento.id_equipamiento IS 'Identificador del equi
 COMMENT ON COLUMN public.equipamiento.nombre IS 'Nombre del equipamiento';
 COMMENT ON COLUMN public.equipamiento.activo IS 'Indica si el equipamiento esta activo o no';
 COMMENT ON COLUMN public.equipamiento.id_area IS 'Identificador del area que esta a cargo del equipamiento';
+COMMENT ON CONSTRAINT uq_equipamiento_nombre ON public.equipamiento.nombre IS 'Se asegura de que no haya dos equipamientos con el mismo nombre';
+COMMENT ON CONSTRAINT ck_activo_id_area ON public.equipamiento IS 'Se asegura de que si el equipamiento esta activo, entonces debe tener un area asignada';
 
 -- Tabla: recinto
 CREATE TABLE IF NOT EXISTS public.recinto (
@@ -287,6 +316,10 @@ COMMENT ON COLUMN public.recinto.aforo IS 'Capacidad maxima de personas que pued
 COMMENT ON COLUMN public.recinto.croquis IS 'Ruta al archivo que almacena el croquis que muestra como llegar al recinto';
 COMMENT ON COLUMN public.recinto.activo IS 'Indica si el recinto esta activo o no';
 COMMENT ON COLUMN public.recinto.id_tipo IS 'Identificador del tipo en el que se clasifica el recinto';
+COMMENT ON CONSTRAINT uq_recinto_nombre ON public.recinto.nombre IS 'Se asegura de que no haya dos recintos con el mismo nombre';
+COMMENT ON CONSTRAINT ck_recinto_latitud ON public.recinto IS 'Se asegura de que la latitud este en el rango valido de -90 a 90';
+COMMENT ON CONSTRAINT ck_recinto_aforo ON public.recinto IS 'Se asegura de que el aforo sea un valor positivo mayor a cero';
+COMMENT ON CONSTRAINT ck_recinto_longitud ON public.recinto IS 'Se asegura de que la longitud este en el rango valido de -180 a 180';
 
 -- TABLAS HIJA
 -- Tabla: rolxpermiso
@@ -365,7 +398,7 @@ CREATE TABLE IF NOT EXISTS public.reservacionxequipamiento (
   id_evento INTEGER NOT NULL,
   id_recinto INTEGER NOT NULL,
   id_equipamiento SMALLINT NOT NULL,
-  cantidad SMALLINT NOT NULL CHECK (cantidad > 0),
+  cantidad SMALLINT NOT NULL CHECK (cantidad >= 0),
   CONSTRAINT pk_reservacion_x_equipamiento PRIMARY KEY (id_evento, id_recinto, id_equipamiento),
   CONSTRAINT fk_reservacion FOREIGN KEY (id_evento,id_recinto) REFERENCES public.reservacion (id_evento,id_recinto) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_equipamiento FOREIGN KEY (id_equipamiento) REFERENCES public.equipamiento (id_equipamiento) ON UPDATE CASCADE ON DELETE RESTRICT
@@ -375,12 +408,13 @@ COMMENT ON COLUMN public.reservacionxequipamiento.id_evento IS 'Identificador de
 COMMENT ON COLUMN public.reservacionxequipamiento.id_recinto IS 'Identificador del recinto en el que se realizara el evento';
 COMMENT ON COLUMN public.reservacionxequipamiento.id_equipamiento IS 'Identificador del equipamiento que se solicita para el evento';
 COMMENT ON COLUMN public.reservacionxequipamiento.cantidad IS 'Cantidad del equipamiento solicitado para el evento';
+COMMENT ON CONSTRAINT ck_reservacionxequipamiento_cantidad ON public.reservacionxequipamiento IS 'Se asegura de que la cantidad solicitada sea un valor positivo mayor o igual a cero';
 
 -- Tabla: area_inventario
 CREATE TABLE IF NOT EXISTS public.area_inventario (
   id_area SMALLINT NOT NULL,
   id_equipamiento SMALLINT NOT NULL,
-  cantidad SMALLINT NOT NULL CHECK (cantidad > 0),
+  cantidad SMALLINT NOT NULL CHECK (cantidad >= 0),
   CONSTRAINT pk_area_inventario PRIMARY KEY (id_area, id_equipamiento),
   CONSTRAINT fk_equipamiento FOREIGN KEY (id_equipamiento) REFERENCES public.equipamiento (id_equipamiento) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_area FOREIGN KEY (id_area) REFERENCES public.area (id_area) ON UPDATE CASCADE ON DELETE RESTRICT
@@ -389,12 +423,13 @@ COMMENT ON TABLE public.area_inventario IS 'Inventario de equipamiento de cada a
 COMMENT ON COLUMN public.area_inventario.id_area IS 'Identificador del area al que pertenece el equipamiento registrado en el inventario';
 COMMENT ON COLUMN public.area_inventario.id_equipamiento IS 'Identificador del equipamiento que se regitra en el inventario';
 COMMENT ON COLUMN public.area_inventario.cantidad IS 'Cantidad del equipamiento';
+COMMENT ON CONSTRAINT ck_area_inventario_cantidad ON public.area_inventario IS 'Se asegura de que la cantidad registrada sea un valor positivo mayor o igual a cero';
 
 -- Tabla: recinto_inventario
 CREATE TABLE IF NOT EXISTS public.recinto_inventario (
   id_recinto SMALLINT NOT NULL,
   id_equipamiento SMALLINT NOT NULL,
-  cantidad SMALLINT NOT NULL CHECK (cantidad > 0),
+  cantidad SMALLINT NOT NULL CHECK (cantidad >= 0),
   CONSTRAINT pk_recinto_inventario PRIMARY KEY (id_recinto, id_equipamiento),
   CONSTRAINT fk_recinto FOREIGN KEY (id_recinto) REFERENCES public.recinto (id_recinto) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_equipamiento FOREIGN KEY (id_equipamiento) REFERENCES public.equipamiento (id_equipamiento) ON UPDATE CASCADE ON DELETE RESTRICT
@@ -403,6 +438,7 @@ COMMENT ON TABLE public.recinto_inventario IS 'Invetario de equipamiento de los 
 COMMENT ON COLUMN public.recinto_inventario.id_recinto IS 'Identificador del recinto al que se le registrara su inventario de equipamiento';
 COMMENT ON COLUMN public.recinto_inventario.id_equipamiento IS 'Identificador del equipamiento que sera registrado en el inventario';
 COMMENT ON COLUMN public.recinto_inventario.cantidad IS 'Cantidad de equipamiento';
+COMMENT ON CONSTRAINT ck_recinto_inventario_cantidad ON public.recinto_inventario IS 'Se asegura de que la cantidad registrada sea un valor positivo mayor o igual a cero';
 
 -- Tabla: fotografia
 CREATE TABLE IF NOT EXISTS public.fotografia (
@@ -416,6 +452,7 @@ COMMENT ON TABLE public.fotografia IS 'Registra las rutas donde estan almacenada
 COMMENT ON COLUMN public.fotografia.id_fotografia IS 'Identificador de la fotografia del recinto';
 COMMENT ON COLUMN public.fotografia.fotografia IS 'Ruta del archivo que almacena la fotografia del recinto';
 COMMENT ON COLUMN public.fotografia.id_recinto IS 'Identificador del recinto al que pertenece la fotografia';
+COMMENT ON CONSTRAINT uq_fotografia_fotografia ON public.fotografia.fotografia IS 'Se asegura de que un recinto tenga las mismas fotografias';
 
 -- Roles
 -- DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_owner') THEN CREATE ROLE app_owner NOLOGIN; END IF; END $$;
