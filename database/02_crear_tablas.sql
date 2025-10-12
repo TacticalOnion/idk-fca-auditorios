@@ -477,5 +477,5 @@ COMMENT ON CONSTRAINT uq_fotografia_fotografia ON public.fotografia.fotografia I
 -- ALTER DEFAULT PRIVILEGES FOR ROLE app_owner IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_rw;
 -- ALTER DEFAULT PRIVILEGES FOR ROLE app_owner IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO app_rw;
 
--- Required for EXCLUDE constraints using '=' with GiST
+-- Extensión para índices GIST en múltiples columnas
 CREATE EXTENSION IF NOT EXISTS btree_gist;
