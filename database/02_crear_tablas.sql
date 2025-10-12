@@ -31,7 +31,7 @@ COMMENT ON COLUMN public.rol_usuario.nombre IS 'Nombre del rol de usuario';
 -- Tabla: area
 CREATE TABLE IF NOT EXISTS public.area (
   id_area SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-  nombre VARCHAR(50) NOT NULL UNIQUE,
+  nombre VARCHAR(150) NOT NULL UNIQUE,
   nombre_responsable VARCHAR(150) NOT NULL,
   correo_responsable VARCHAR(100) NOT NULL,
   activo BOOLEAN DEFAULT True NOT NULL,
@@ -46,7 +46,7 @@ COMMENT ON COLUMN public.area.activo IS 'Indica si el area esta activa o no';
 
 -- Tabla: rol_participacion
 CREATE TABLE IF NOT EXISTS public.rol_participacion (
-  id_rol_participacion SMALLINT NOT NULL,
+  id_rol_participacion SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL,
   nombre VARCHAR(50) NOT NULL UNIQUE,
   CONSTRAINT pk_rol_participacion PRIMARY KEY (id_rol_participacion)
 );
@@ -68,7 +68,7 @@ COMMENT ON COLUMN public.nivel.siglas IS 'Siglas del nivel de un grado academico
 
 -- Tabla: institucion
 CREATE TABLE IF NOT EXISTS public.institucion (
-  id_institucion SMALLINT NOT NULL,
+  id_institucion SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL,
   nombre VARCHAR(100) NOT NULL UNIQUE,
   siglas VARCHAR(20) NOT NULL UNIQUE,
   CONSTRAINT pk_institucion PRIMARY KEY (id_institucion)
@@ -128,8 +128,8 @@ COMMENT ON COLUMN public.estatus.nombre IS 'Nombre del estatus';
 
 -- Tabla: tipo
 CREATE TABLE IF NOT EXISTS public.tipo (
-  id_tipo SMALLINT NOT NULL,
-  nombre VARCHAR(50) NOT NULL UNIQUE,
+  id_tipo SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+  nombre VARCHAR(100) NOT NULL UNIQUE,
   CONSTRAINT pk_tipo PRIMARY KEY (id_tipo)
 );
 COMMENT ON TABLE public.tipo IS 'Registra los tipos en los que se puede clasificar un recinto';
@@ -140,7 +140,7 @@ COMMENT ON COLUMN public.tipo.nombre IS 'Nombre del recinto';
 -- Tabla: puesto
 CREATE TABLE IF NOT EXISTS public.puesto (
   id_puesto SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-  nombre VARCHAR(50) NOT NULL UNIQUE,
+  nombre VARCHAR(100) NOT NULL UNIQUE,
   activo BOOLEAN DEFAULT True NOT NULL,
   id_area SMALLINT NOT NULL,
   CONSTRAINT pk_puesto PRIMARY KEY (id_puesto),
@@ -155,8 +155,8 @@ COMMENT ON COLUMN public.puesto.id_area IS 'Identificador del area al que perten
 -- Tabla: usuario
 CREATE TABLE IF NOT EXISTS public.usuario (
   id_usuario SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-  foto_usuario VARCHAR(512) NOT NULL UNIQUE DEFAULT '/usuarios/foto_usuario_default.png',
-  nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
+  foto_usuario VARCHAR(512) NOT NULL DEFAULT '/usuarios/foto_usuario_default.png',
+  nombre_usuario VARCHAR(100) NOT NULL UNIQUE,
   rfc CHAR(13) NULL UNIQUE,
   nombre VARCHAR(50) NOT NULL,
   apellido_paterno VARCHAR(50) NOT NULL,
@@ -207,7 +207,7 @@ CREATE TABLE IF NOT EXISTS public.evento (
   CONSTRAINT fk_estatus FOREIGN KEY (id_estatus) REFERENCES public.estatus (id_estatus) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_categoria FOREIGN KEY (id_categoria) REFERENCES public.categoria (id_categoria) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_mega_evento FOREIGN KEY (id_mega_evento) REFERENCES public.evento (id_evento) ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT ck_rango_fechas CHECK (fecha_inicio < fecha_fin),
+  CONSTRAINT ck_rango_fechas CHECK (fecha_inicio <= fecha_fin),
   CONSTRAINT ck_rango_horarios CHECK (horario_inicio < horario_fin),
   CONSTRAINT ck_horario_laboral CHECK (horario_inicio >= '07:00' AND horario_fin <= '22:00'),
   CONSTRAINT ck_duracion_evento CHECK (fecha_inicio <> fecha_fin OR (horario_fin - horario_inicio) >= INTERVAL '30 minutes')
@@ -255,7 +255,7 @@ CREATE TABLE IF NOT EXISTS public.equipamiento (
   id_area SMALLINT NULL,
   CONSTRAINT pk_equipamiento PRIMARY KEY (id_equipamiento),
   CONSTRAINT fk_area FOREIGN KEY (id_area) REFERENCES public.area (id_area) ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT ck_activo_id_area CHECK ((activo = True AND id_area IS NOT NULL))
+  CONSTRAINT ck_activo_id_area CHECK (NOT activo OR id_area IS NOT NULL)
 );
 COMMENT ON TABLE public.equipamiento IS 'Equipamiento solicitado o con el que cuenta la facultad para atender un evento';
 COMMENT ON COLUMN public.equipamiento.id_equipamiento IS 'Identificador del equipamiento';
@@ -393,7 +393,7 @@ COMMENT ON COLUMN public.area_inventario.cantidad IS 'Cantidad del equipamiento'
 -- Tabla: recinto_inventario
 CREATE TABLE IF NOT EXISTS public.recinto_inventario (
   id_recinto SMALLINT NOT NULL,
-  id_equipamiento SMALLINT NOT NULL UNIQUE,
+  id_equipamiento SMALLINT NOT NULL,
   cantidad SMALLINT NOT NULL CHECK (cantidad > 0),
   CONSTRAINT pk_recinto_inventario PRIMARY KEY (id_recinto, id_equipamiento),
   CONSTRAINT fk_recinto FOREIGN KEY (id_recinto) REFERENCES public.recinto (id_recinto) ON UPDATE CASCADE ON DELETE RESTRICT,
