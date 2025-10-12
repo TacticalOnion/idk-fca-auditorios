@@ -1,4 +1,7 @@
--- Función para verificar que una participación no esté asociada a un megaevento
+-- Function: verificar_evento_no_mega
+-- Descripción: Función para verificar que una participación no esté asociada a un megaevento
+-- Dispara: Antes de insertar o actualizar una participación
+
 CREATE OR REPLACE FUNCTION verificar_evento_no_mega()
 RETURNS trigger AS $$
 BEGIN
@@ -14,12 +17,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+COMMENT ON FUNCTION verificar_evento_no_mega() IS 'Verifica que el evento asociado a la participación no sea un megaevento';
+
+-- Trigger: trg_verificar_evento_no_mega
+-- Descripción: Verifica que el evento asociado a la participación no sea un megaevento
+-- Dispara: Antes de insertar o actualizar una participación
+
 CREATE TRIGGER trg_verificar_evento_no_mega
 BEFORE INSERT OR UPDATE ON public.participacion
 FOR EACH ROW
 EXECUTE FUNCTION verificar_evento_no_mega();
 
--- Función para verificar que la fecha de inicio del evento no esté dentro de la misma semana que la fecha de solicitud de la reservación
+COMMENT ON TRIGGER trg_verificar_evento_no_mega ON public.participacion IS 'Verifica que el evento asociado a la participación no sea un megaevento';
+
+/* ---------------------------------------------*/
+-- Function: verificar_evento_fuera_semana_actual
+-- Descripción: Verifica que la fecha de inicio del evento no esté dentro de la misma semana que la fecha de solicitud de la reservación
+-- Dispara: Antes de insertar o actualizar una reservación
+
 CREATE OR REPLACE FUNCTION verificar_evento_fuera_semana_actual()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -47,12 +62,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+COMMENT ON FUNCTION verificar_evento_fuera_semana_actual() IS 'Verifica que la fecha de inicio del evento no esté dentro de la misma semana que la fecha de solicitud de la reservación';
+
+-- Trigger: trg_verificar_evento_fuera_semana
+-- Descripción: Verifica que la fecha de inicio del evento no esté dentro de la misma semana que la fecha de solicitud de la reservación
+-- Dispara: Antes de insertar o actualizar una reservación
+
 CREATE TRIGGER trg_verificar_evento_fuera_semana
 BEFORE INSERT OR UPDATE ON public.reservacion
 FOR EACH ROW
 EXECUTE FUNCTION verificar_evento_fuera_semana_actual();
 
--- Función para validar el estatus del evento según su fecha de inicio
+COMMENT ON TRIGGER trg_verificar_evento_fuera_semana ON public.reservacion IS 'Verifica que la fecha de inicio del evento no esté dentro de la misma semana que la fecha de solicitud de la reservación';
+
+/* ---------------------------------------------*/
+-- Function: validar_estatus_evento_por_fecha
+-- Descripción: Función para validar el estatus del evento según su fecha de inicio
+-- Dispara: Antes de insertar o actualizar un evento
+
 CREATE OR REPLACE FUNCTION validar_estatus_evento_por_fecha()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -88,12 +115,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+COMMENT ON FUNCTION validar_estatus_evento_por_fecha() IS 'Valida que el estatus del evento sea coherente con su fecha de inicio (antes o después de la fecha actual)';
+
+-- Trigger: trg_validar_estatus_evento_por_fecha
+-- Descripción: Trigger para validar el estatus de un evento según su fecha de inicio
+-- Dispara: Antes de insertar o actualizar un evento
+
 CREATE TRIGGER trg_validar_estatus_evento_por_fecha
 BEFORE INSERT OR UPDATE ON public.evento
 FOR EACH ROW
 EXECUTE FUNCTION validar_estatus_evento_por_fecha();
 
--- Función para verificar que una reservación no esté asociada a un evento cancelado
+COMMENT ON TRIGGER trg_validar_estatus_evento_por_fecha ON public.evento IS 'Valida que el estatus del evento sea coherente con su fecha de inicio (antes o después de la fecha actual)';
+
+/* ---------------------------------------------*/
+-- Function: verificar_evento_no_cancelado
+-- Descripción: Función para verificar que una reservación no esté asociada a un evento cancelado
+-- Dispara: Antes de insertar o actualizar una reservación
+
 CREATE OR REPLACE FUNCTION public.verificar_evento_no_cancelado()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -120,13 +159,25 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+COMMENT ON FUNCTION public.verificar_evento_no_cancelado() IS 'Verifica que la reservación no esté asociada a un evento cancelado';
+
+-- Trigger: trg_verificar_evento_no_cancelado
+-- Descripción: Trigger para verificar que una reservación no esté asociada a un evento cancelado
+-- Dispara: Antes de insertar o actualizar una reservación
+
 CREATE TRIGGER trg_verificar_evento_no_cancelado
 BEFORE INSERT OR UPDATE OF id_evento
 ON public.reservacion
 FOR EACH ROW
 EXECUTE FUNCTION public.verificar_evento_no_cancelado();
 
--- Función para verificar que el motivo de cancelación se registre correctamente según el estatus
+COMMENT ON TRIGGER trg_verificar_evento_no_cancelado ON public.reservacion IS 'Verifica que la reservación no esté asociada a un evento cancelado';
+
+/* ---------------------------------------------*/
+-- Function: verificar_evento_no_cancelado
+-- Descripción: Función para verificar que el motivo de cancelación se registre correctamente según el estatus
+-- Dispara: Antes de insertar o actualizar un evento o reservación
+
 CREATE OR REPLACE FUNCTION public.verificar_motivo_cancelacion()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -154,11 +205,23 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+COMMENT ON FUNCTION public.verificar_motivo_cancelacion() IS 'Verifica que el motivo de cancelación se registre correctamente según el estatus';
+
+-- Trigger: trg_evento_motivo_cancelacion
+-- Descripción: Trigger para validar que el motivo de cancelación se registre correctamente según el estatus
+-- Dispara: Antes de insertar o actualizar un evento
+
 CREATE TRIGGER trg_evento_motivo_cancelacion
 BEFORE INSERT OR UPDATE OF id_estatus, motivo
 ON public.evento
 FOR EACH ROW
 EXECUTE FUNCTION public.verificar_motivo_cancelacion();
+
+COMMENT ON TRIGGER trg_evento_motivo_cancelacion ON public.evento IS 'Verifica que el motivo de cancelación se registre correctamente según el estatus';
+
+-- Trigger: trg_reservacion_motivo_cancelacion
+-- Descripción: Trigger para validar que el motivo de cancelación se registre correctamente según el estatus
+-- Dispara: Antes de insertar o actualizar una reservación
 
 CREATE TRIGGER trg_reservacion_motivo_cancelacion
 BEFORE INSERT OR UPDATE OF id_estatus, motivo
@@ -166,8 +229,13 @@ ON public.reservacion
 FOR EACH ROW
 EXECUTE FUNCTION public.verificar_motivo_cancelacion();
 
--- Función para validar que un evento pueda cambiar a estatus 'Realizada'
--- Función de validación
+COMMENT ON TRIGGER trg_reservacion_motivo_cancelacion ON public.reservacion IS 'Verifica que el motivo de cancelación se registre correctamente según el estatus';
+
+/* ---------------------------------------------*/
+-- Function: verificar_evento_no_cancelado
+-- Descripción: Función para validar que un evento pueda cambiar a estatus 'Realizada'
+-- Dispara: Antes de insertar o actualizar un evento
+
 CREATE OR REPLACE FUNCTION public.evento_validar_realizada()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -246,14 +314,25 @@ BEGIN
 END;
 $$;
 
+COMMENT ON FUNCTION public.evento_validar_realizada() IS 'Valida que un evento pueda cambiar a estatus "Realizada" según las reglas de negocio';
+
+-- Trigger: trg_evento_validar_realizada
+-- Descripción: Trigger para validar que un evento pueda cambiar a estatus 'Realizada'
+-- Dispara: Antes de insertar o actualizar un evento
+
 CREATE TRIGGER trg_evento_validar_realizada
 BEFORE INSERT OR UPDATE OF id_estatus, id_recinto, id_reservacion, fecha_inicio
 ON public.evento
 FOR EACH ROW
 EXECUTE FUNCTION public.evento_validar_realizada();
 
+COMMENT ON TRIGGER trg_evento_validar_realizada ON public.evento IS 'Valida que un evento pueda cambiar a estatus "Realizada" según las reglas de negocio';
 
--- Función para validar que un evento referenciado a un mega_evento esté dentro del rango de fechas y horarios del mega_evento
+/* ---------------------------------------------*/
+-- Function: verificar_evento_no_cancelado
+-- Descripción: Función para verificar que un evento referenciado a un mega_evento esté dentro del rango de fechas y horarios del mega_evento
+-- Dispara: Antes de insertar o actualizar un evento
+
 CREATE OR REPLACE FUNCTION public.evento_validar_rango_mega()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -321,8 +400,16 @@ BEGIN
 END;
 $$;
 
+COMMENT ON FUNCTION public.evento_validar_rango_mega() IS 'Verifica que un evento referenciado a un mega_evento esté dentro del rango de fechas y horarios del mega_evento';
+
+-- Trigger: trg_evento_validar_rango_mega
+-- Descripción: Trigger para validar que un evento referenciado a un mega_evento esté dentro del rango de fechas y horarios del mega_evento
+-- Dispara: Antes de insertar o actualizar un evento
+
 CREATE TRIGGER trg_evento_validar_rango_mega
 BEFORE INSERT OR UPDATE OF id_mega_evento, fecha_inicio, horario_inicio, fecha_fin, horario_fin
 ON public.evento
 FOR EACH ROW
 EXECUTE FUNCTION public.evento_validar_rango_mega();
+
+COMMENT ON TRIGGER trg_evento_validar_rango_mega ON public.evento IS 'Verifica que un evento referenciado a un mega_evento esté dentro del rango de fechas y horarios del mega_evento';
