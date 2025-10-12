@@ -143,7 +143,7 @@ COMMENT ON CONSTRAINT uq_estatus_nombre ON public.estatus.nombre IS 'Se asegura 
 -- Tabla: tipo
 CREATE TABLE IF NOT EXISTS public.tipo (
   id_tipo SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-  nombre VARCHAR(100) NOT NULL UNIQUE,
+  nombre VARCHAR(50) NOT NULL UNIQUE,
   CONSTRAINT pk_tipo PRIMARY KEY (id_tipo)
 );
 COMMENT ON TABLE public.tipo IS 'Registra los tipos en los que se puede clasificar un recinto';
