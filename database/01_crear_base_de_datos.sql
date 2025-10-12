@@ -1,8 +1,8 @@
 -- Crear la base de datos
 CREATE DATABASE fca_auditorios
     WITH ENCODING 'UTF8'
-    LC_COLLATE='es_MX.UTF-8'
-    LC_CTYPE='es_MX.UTF-8'
+    LC_COLLATE='Spanish_Spain.1252'
+    LC_CTYPE='Spanish_Spain.1252'
     TEMPLATE template0;
 
 -- Agregar un comentario descriptivo
