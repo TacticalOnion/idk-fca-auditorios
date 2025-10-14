@@ -517,14 +517,6 @@ VALUES
     ('Zambia'),
     ('Zimbabue');
 
--- estatus
-INSERT INTO public.estatus (nombre)
-VALUES
-    ('Pendiente'),
-    ('Autorizada'),
-    ('Realizada'),
-    ('Cancelada');
-
 -- tipo
 INSERT INTO public.tipo (nombre)
 VALUES
@@ -715,197 +707,156 @@ VALUES
         (SELECT id_puesto FROM public.puesto WHERE nombre = 'Coordinadora de Difusión'));
 
 -- evento
-INSERT INTO public.evento (nombre, descripcion, fecha_inicio, fecha_fin, horario_inicio, horario_fin, presencial, online, motivo, mega_evento, id_estatus, id_categoria, id_mega_evento)
+-- Megaeventos (3)
+INSERT INTO public.evento (nombre, descripcion, fecha_inicio, fecha_fin, horario_inicio, horario_fin, presencial, online, motivo, mega_evento, id_categoria, id_mega_evento)
 VALUES
--- Megaeventos (ajustados a estatus Pendiente para que permanezcan en diciembre)
-('Simposio de Administración 2025','Simposio anual sobre tendencias en administración',
- '2025-12-01','2025-12-05','09:00','18:00',true,false,NULL,true,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
- (SELECT id_categoria FROM public.categoria WHERE nombre='Simposio'),NULL),
-('Congreso Internacional de Contaduría 2025','Congreso internacional con expertos en contaduría',
- '2025-12-02','2025-12-06','09:00','18:00',true,false,NULL,true,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
- (SELECT id_categoria FROM public.categoria WHERE nombre='Congreso'),NULL),
-('Semana Académica de Informática 2025','Semana académica dedicada a la informática y tecnología',
- '2025-12-03','2025-12-07','09:00','18:00',true,false,NULL,true,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
- (SELECT id_categoria FROM public.categoria WHERE nombre='Semana académica'),NULL),
+    ('Simposio de Administración 2025','Simposio anual sobre tendencias en administración',
+    '2025-12-01','2025-12-05','09:00','18:00',true,false,NULL,true,
+    (SELECT id_categoria FROM public.categoria WHERE nombre='Simposio'),NULL),
+    ('Congreso Internacional de Contaduría 2025','Congreso internacional con expertos en contaduría',
+    '2025-12-02','2025-12-06','09:00','18:00',true,false,NULL,true,
+    (SELECT id_categoria FROM public.categoria WHERE nombre='Congreso'),NULL),
+    ('Semana Académica de Informática 2025','Semana académica dedicada a la informática y tecnología',
+    '2025-12-03','2025-12-07','09:00','18:00',true,false,NULL,true,
+    (SELECT id_categoria FROM public.categoria WHERE nombre='Semana académica'),NULL);
 
+INSERT INTO public.evento (nombre, descripcion, fecha_inicio, fecha_fin, horario_inicio, horario_fin, presencial, online, motivo, mega_evento, id_categoria, id_mega_evento)
+VALUES
 -- Administración (10)
 ('Taller de Liderazgo Empresarial','Taller práctico sobre liderazgo en administración',
  '2025-12-04','2025-12-04','10:00','14:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Taller'),
  (SELECT id_evento FROM public.evento WHERE nombre='Simposio de Administración 2025')),
 ('Conferencia de Innovación Administrativa','Conferencia sobre innovación en procesos administrativos',
  '2025-12-05','2025-12-05','11:00','13:00',false,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Conferencia'),
  (SELECT id_evento FROM public.evento WHERE nombre='Simposio de Administración 2025')),
 ('Conversatorio: Retos de la Administración','Conversatorio con expertos sobre retos actuales',
  '2025-11-20','2025-11-20','12:00','14:00',true,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Conversatorio'),NULL),
 ('Charla sobre Gestión de Proyectos','Charla sobre herramientas de gestión de proyectos',
  '2025-04-05','2025-04-05','09:00','11:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Realizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Charla'),NULL),
 ('Seminario de Administración Pública','Seminario sobre administración pública moderna',
- '2025-09-07','2025-09-09','10:00','13:00',true,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada'),
+ '2025-09-07','2025-09-09','10:00','13:00',true,true, NULL,false,
  (SELECT id_categoria FROM public.categoria WHERE nombre='Seminario'),NULL),
 ('Simposio de Recursos Humanos','Simposio sobre gestión de recursos humanos',
  '2025-12-08','2025-12-10','09:00','17:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Simposio'),NULL),
 ('Congreso de Administración Estratégica','Congreso sobre estrategias administrativas',
  '2025-10-09','2025-10-11','09:00','18:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Congreso'),NULL),
 ('Foro de Emprendimiento','Foro para emprendedores en administración',
  '2025-12-10','2025-12-10','10:00','13:00',false,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Foro'),NULL),
 ('Presentación de libro: Administración Moderna','Presentación de libro sobre administración moderna',
  '2025-09-12','2025-09-12','12:00','14:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Realizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Presentación de libro'),NULL),
 ('Taller de Planeación','Taller sobre planeación estratégica',
  '2025-09-15','2025-09-15','09:00','13:00',false,true,'Cancelado por falta de inscripciones',false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Taller'),NULL),
 
 -- Contaduría (10)
 ('Taller de Auditoría Financiera','Taller sobre auditoría financiera en contaduría',
  '2025-12-04','2025-12-04','10:00','14:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Taller'),
  (SELECT id_evento FROM public.evento WHERE nombre='Congreso Internacional de Contaduría 2025')),
 ('Conferencia de Normas Contables','Conferencia sobre nuevas normas contables',
  '2025-12-05','2025-12-05','11:00','13:00',false,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Conferencia'),
  (SELECT id_evento FROM public.evento WHERE nombre='Congreso Internacional de Contaduría 2025')),
 ('Conversatorio: Ética en la Contaduría','Conversatorio sobre ética profesional',
  '2025-12-06','2025-12-06','12:00','14:00',true,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Conversatorio'),
  (SELECT id_evento FROM public.evento WHERE nombre='Congreso Internacional de Contaduría 2025')),
 ('Charla sobre Impuestos','Charla sobre actualización fiscal',
  '2025-04-10','2025-04-10','09:00','11:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Realizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Charla'),NULL),
 ('Seminario de Contabilidad Internacional','Seminario sobre contabilidad internacional',
  '2025-09-07','2025-09-09','10:00','13:00',true,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Seminario'),NULL),
 ('Simposio de Auditoría','Simposio sobre auditoría avanzada',
  '2025-12-08','2025-12-10','09:00','17:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Simposio'),NULL),
 ('Congreso de Contabilidad Gubernamental','Congreso sobre contabilidad en el sector público',
  '2025-10-09','2025-10-11','09:00','18:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Congreso'),NULL),
 ('Foro de Fiscalización','Foro sobre fiscalización y auditoría',
  '2025-12-10','2025-12-10','10:00','13:00',false,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Foro'),NULL),
 ('Presentación de libro: Contaduría Actual','Presentación de libro sobre contaduría actual',
  '2025-09-25','2025-09-25','12:00','14:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Realizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Presentación de libro'),NULL),
 ('Seminario de Costos','Seminario sobre costos en contaduría',
  '2025-09-28','2025-09-28','09:00','13:00',false,true,'Cancelado por falta de ponentes',false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Seminario'),NULL),
 
 -- Negocios Internacionales (10)
 ('Taller de Comercio Exterior','Taller sobre comercio exterior y tratados internacionales',
  '2025-12-04','2025-12-04','10:00','14:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Taller'),NULL),
 ('Conferencia de Negocios Globales','Conferencia sobre negocios globales',
  '2025-12-05','2025-12-05','11:00','13:00',false,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Conferencia'),NULL),
 ('Conversatorio: Oportunidades Internacionales','Conversatorio sobre oportunidades de negocios internacionales',
  '2025-11-06','2025-11-06','12:00','14:00',true,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Conversatorio'),NULL),
 ('Charla sobre Exportaciones','Charla sobre procesos de exportación',
  '2025-04-15','2025-04-15','09:00','11:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Realizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Charla'),NULL),
 ('Semana Académica de Negocios Internacionales','Semana académica sobre negocios internacionales',
  '2025-12-03','2025-12-05','09:00','18:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Semana académica'),
  (SELECT id_evento FROM public.evento WHERE nombre='Congreso Internacional de Contaduría 2025')),
 ('Simposio de Negocios Digitales','Simposio sobre negocios digitales y tecnología',
  '2025-12-08','2025-12-10','09:00','17:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Simposio'),NULL),
 ('Congreso de Negocios Internacionales','Congreso sobre tendencias en negocios internacionales',
  '2025-10-09','2025-10-11','09:00','18:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Congreso'),NULL),
 ('Foro de Inversión Extranjera','Foro sobre inversión extranjera en México',
  '2025-12-10','2025-12-10','10:00','13:00',false,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Foro'),NULL),
 ('Presentación de libro: Negocios Internacionales','Presentación de libro sobre negocios internacionales',
  '2025-10-05','2025-10-05','12:00','14:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Realizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Presentación de libro'),NULL),
 ('Congreso de Comercio','Congreso sobre comercio internacional',
  '2025-10-04','2025-10-04','09:00','13:00',false,true,'Cancelado por motivos logísticos',false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Congreso'),NULL),
 
 -- Informática (10)
 ('Taller de Ciberseguridad','Taller sobre ciberseguridad y protección de datos',
  '2025-12-04','2025-12-04','10:00','14:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Taller'),
  (SELECT id_evento FROM public.evento WHERE nombre='Semana Académica de Informática 2025')),
 ('Conferencia de Inteligencia Artificial','Conferencia sobre inteligencia artificial aplicada',
  '2025-12-05','2025-12-05','11:00','13:00',false,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Conferencia'),
  (SELECT id_evento FROM public.evento WHERE nombre='Semana Académica de Informática 2025')),
 ('Conversatorio: Tecnología y Sociedad','Conversatorio sobre el impacto de la tecnología',
  '2025-12-06','2025-12-06','12:00','14:00',true,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Conversatorio'),
  (SELECT id_evento FROM public.evento WHERE nombre='Semana Académica de Informática 2025')),
 ('Charla sobre Programación','Charla introductoria a la programación',
  '2025-04-20','2025-04-20','09:00','11:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Realizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Charla'),NULL),
 ('Seminario de Big Data','Seminario sobre análisis de grandes volúmenes de datos',
  '2025-09-07','2025-09-09','10:00','13:00',true,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Seminario'),NULL),
 ('Simposio de Innovación Tecnológica','Simposio sobre innovación en tecnología',
  '2025-12-08','2025-12-10','09:00','17:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Simposio'),NULL),
 ('Congreso de Informática Educativa','Congreso sobre informática aplicada a la educación',
  '2025-10-09','2025-10-11','09:00','18:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Congreso'),NULL),
 ('Foro de Tecnología','Foro sobre avances tecnológicos',
  '2025-12-10','2025-12-10','10:00','13:00',false,true,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Foro'),NULL),
 ('Presentación de libro: Informática Moderna','Presentación de libro sobre informática moderna',
  '2025-09-18','2025-09-18','12:00','14:00',true,false,NULL,false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Realizada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Presentación de libro'),NULL),
 ('Simposio de Software Libre','Simposio sobre software libre y código abierto',
  '2025-09-20','2025-09-20','09:00','13:00',false,true,'Cancelado por falta de patrocinadores',false,
- (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada'),
  (SELECT id_categoria FROM public.categoria WHERE nombre='Simposio'),NULL);
 
 -- grado
@@ -1812,227 +1763,184 @@ VALUES
      (SELECT id_grado FROM public.grado WHERE titulo='Licenciado en Contaduría'));
 
 -- reservacion
-INSERT INTO public.reservacion (id_evento,id_recinto,fecha_solicitud,motivo,id_estatus)
+INSERT INTO public.reservacion (id_evento,id_recinto,fecha_solicitud,estatus)
 VALUES
     -- Megaeventos
     ((SELECT id_evento FROM public.evento WHERE nombre='Simposio de Administración 2025'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro'),
-    '2025-09-10 10:00:00','Cancelada por reprogramación interna',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-09-10 10:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Congreso Internacional de Contaduría 2025'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Aula Magna de Profesores Eméritos'),
-    '2025-09-11 11:00:00','Cancelada por conflicto de agenda',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-09-11 11:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Semana Académica de Informática 2025'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Tomás López Sánchez'),
-    '2025-09-12 12:00:00','Cancelada por mantenimiento del recinto',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-09-12 12:00:00','Pendiente'),
 
     -- Administración
     ((SELECT id_evento FROM public.evento WHERE nombre='Taller de Liderazgo Empresarial'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Centro de Informática (CIFCA)'),
-    '2025-10-01 09:00:00','Cancelada por solicitud del organizador',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-01 09:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Conferencia de Innovación Administrativa'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé'),
-    '2025-10-02 09:30:00','Cancelada por disponibilidad de ponente',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-02 09:30:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Conversatorio: Retos de la Administración'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro'),
-    '2025-10-20 10:00:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada')),
+    '2025-10-20 10:00:00','Autorizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Charla sobre Gestión de Proyectos'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Aula Magna de Profesores Eméritos'),
-    '2025-02-20 10:00:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente')),
+    '2025-02-20 10:00:00','Realizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Seminario de Administración Pública'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Tomás López Sánchez'),
-    '2025-08-01 11:00:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada')),
+    '2025-08-01 11:00:00','Autorizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Simposio de Recursos Humanos'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Centro de Informática (CIFCA)'),
-    '2025-10-05 09:00:00','Cancelada por ajustes presupuestales',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-05 09:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Congreso de Administración Estratégica'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé'),
-    '2025-09-20 12:00:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada')),
+    '2025-09-20 12:00:00','Autorizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Foro de Emprendimiento'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro'),
-    '2025-10-06 09:30:00','Cancelada por falta de confirmaciones',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-06 09:30:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Presentación de libro: Administración Moderna'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Aula Magna de Profesores Eméritos'),
-    '2025-08-20 10:30:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente')),
+    '2025-08-20 10:30:00','Realizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Taller de Planeación'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Tomás López Sánchez'),
-    '2025-08-15 09:00:00','Cancelada por falta de inscripciones',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-08-15 09:00:00','Cancelada'),
 
     -- Contaduría
     ((SELECT id_evento FROM public.evento WHERE nombre='Taller de Auditoría Financiera'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Centro de Informática (CIFCA)'),
-    '2025-10-01 14:00:00','Cancelada por cambios en el programa',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-01 14:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Conferencia de Normas Contables'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé'),
-    '2025-10-02 15:00:00','Cancelada por disponibilidad de ponente',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-02 15:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Conversatorio: Ética en la Contaduría'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro'),
-    '2025-10-03 10:00:00','Cancelada por reprogramación académica',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-03 10:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Charla sobre Impuestos'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Aula Magna de Profesores Eméritos'),
-    '2025-03-01 09:00:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente')),
+    '2025-03-01 09:00:00','Realizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Seminario de Contabilidad Internacional'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Tomás López Sánchez'),
-    '2025-08-01 11:30:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada')),
+    '2025-08-01 11:30:00','Autorizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Simposio de Auditoría'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Centro de Informática (CIFCA)'),
-    '2025-10-05 13:00:00','Cancelada por agenda institucional',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-05 13:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Congreso de Contabilidad Gubernamental'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé'),
-    '2025-09-20 12:30:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada')),
+    '2025-09-20 12:30:00','Autorizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Foro de Fiscalización'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro'),
-    '2025-10-06 10:00:00','Cancelada por conflicto de salas',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-06 10:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Presentación de libro: Contaduría Actual'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Aula Magna de Profesores Eméritos'),
-    '2025-09-01 10:15:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente')),
+    '2025-09-01 10:15:00','Realizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Seminario de Costos'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Tomás López Sánchez'),
-    '2025-09-05 09:45:00','Cancelada por falta de ponentes',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-09-05 09:45:00','Cancelada'),
 
     -- Negocios Internacionales
     ((SELECT id_evento FROM public.evento WHERE nombre='Taller de Comercio Exterior'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Centro de Informática (CIFCA)'),
-    '2025-10-01 16:00:00','Cancelada por cambios en lineamientos',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-01 16:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Conferencia de Negocios Globales'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé'),
-    '2025-10-02 16:30:00','Cancelada por ausencia de ponente',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-02 16:30:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Conversatorio: Oportunidades Internacionales'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro'),
-    '2025-10-10 11:00:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada')),
+    '2025-10-10 11:00:00','Autorizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Charla sobre Exportaciones'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Aula Magna de Profesores Eméritos'),
-    '2025-03-05 10:00:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente')),
+    '2025-03-05 10:00:00','Realizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Semana Académica de Negocios Internacionales'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Tomás López Sánchez'),
-    '2025-09-30 09:00:00','Cancelada por ajustes de programa',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-09-30 09:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Simposio de Negocios Digitales'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Centro de Informática (CIFCA)'),
-    '2025-10-05 11:15:00','Cancelada por mantenimiento del equipo',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-05 11:15:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Congreso de Negocios Internacionales'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé'),
-    '2025-09-20 13:00:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada')),
+    '2025-09-20 13:00:00','Autorizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Foro de Inversión Extranjera'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro'),
-    '2025-10-06 11:30:00','Cancelada por cruce con otro evento',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-06 11:30:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Presentación de libro: Negocios Internacionales'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Aula Magna de Profesores Eméritos'),
-    '2025-09-10 09:30:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente')),
+    '2025-09-10 09:30:00','Realizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Congreso de Comercio'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Tomás López Sánchez'),
-    '2025-09-05 12:00:00','Cancelada por motivos logísticos',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-09-05 12:00:00','Cancelada'),
 
     -- Informática
     ((SELECT id_evento FROM public.evento WHERE nombre='Taller de Ciberseguridad'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Centro de Informática (CIFCA)'),
-    '2025-10-01 12:30:00','Cancelada por actualización de seguridad',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-01 12:30:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Conferencia de Inteligencia Artificial'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé'),
-    '2025-10-02 12:45:00','Cancelada por cambios curriculares',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-02 12:45:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Conversatorio: Tecnología y Sociedad'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro'),
-    '2025-10-03 13:15:00','Cancelada por agenda institucional',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-03 13:15:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Charla sobre Programación'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Aula Magna de Profesores Eméritos'),
-    '2025-03-10 09:15:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente')),
+    '2025-03-10 09:15:00','Realizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Seminario de Big Data'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Tomás López Sánchez'),
-    '2025-08-01 10:45:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada')),
+    '2025-08-01 10:45:00','Autorizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Simposio de Innovación Tecnológica'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Centro de Informática (CIFCA)'),
-    '2025-10-05 14:30:00','Cancelada por compatibilidad técnica',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-05 14:30:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Congreso de Informática Educativa'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé'),
-    '2025-09-20 14:45:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Autorizada')),
+    '2025-09-20 14:45:00','Autorizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Foro de Tecnología'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro'),
-    '2025-10-06 15:00:00','Cancelada por disponibilidad de sala',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada')),
+    '2025-10-06 15:00:00','Pendiente'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Presentación de libro: Informática Moderna'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Aula Magna de Profesores Eméritos'),
-    '2025-08-25 11:00:00',NULL,
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Pendiente')),
+    '2025-08-25 11:00:00','Realizada'),
 
     ((SELECT id_evento FROM public.evento WHERE nombre='Simposio de Software Libre'),
     (SELECT id_recinto FROM public.recinto WHERE nombre='Auditorio C.P. Tomás López Sánchez'),
-    '2025-08-28 12:30:00','Cancelada por falta de patrocinadores',
-    (SELECT id_estatus FROM public.estatus WHERE nombre='Cancelada'));
+    '2025-08-28 12:30:00','Cancelada');
 
 -- reservacionxequipamiento
 INSERT INTO public.reservacionxequipamiento (id_evento,id_recinto,id_equipamiento,cantidad)
@@ -2719,5 +2627,102 @@ VALUES
     ('/recintos/auditorio_cp_arturo_elizundia_charles_2.png',(SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio C.P. Arturo Elizundia Charles')),
     ('/recintos/auditorio_cp_arturo_elizundia_charles_3.png',(SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio C.P. Arturo Elizundia Charles')),
     ('/recintos/auditorio_cp_arturo_elizundia_charles_4.png',(SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio C.P. Arturo Elizundia Charles'));
+
+-- Auditoria
+INSERT INTO public.auditoria (nombre_tabla,id_registro_afectado,accion,campo_modificado,valor_anterior,valor_nuevo,id_usuario,fecha_hora)
+VALUES
+    ('fotografia',
+        (SELECT id_fotografia
+         FROM public.fotografia
+         WHERE id_recinto = (SELECT id_recinto FROM public.recinto WHERE nombre = 'Centro de Idiomas (CEDI)')
+           AND fotografia = '/recintos/centro_de_idiomas_cedi_1.png'
+         LIMIT 1),
+        'UPDATE','fotografia','/recintos/centro_de_idiomas_cedi_foto_antigua.png','/recintos/centro_de_idiomas_cedi_1.png',
+        (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'jefa.educacioncontinua' LIMIT 1),
+        CURRENT_TIMESTAMP),
+
+    ('evento',
+        (SELECT id_evento
+         FROM public.evento
+         WHERE nombre = 'Simposio de Administración 2025'
+         LIMIT 1),
+        'UPDATE','nombre','zimposio admin 2025','Simposio de Administración 2025',
+        (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'jefe.licadministracion' LIMIT 1),
+        CURRENT_TIMESTAMP),
+
+    ('evento',
+        (SELECT id_evento
+         FROM public.evento
+         WHERE nombre = 'Taller de Planeación'
+         LIMIT 1),
+        'UPDATE','fecha_inicio','2025-09-01','2025-09-15',
+        (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'jefe.licadministracion' LIMIT 1),
+        CURRENT_TIMESTAMP),
+
+    ('evento_organizador',
+        (SELECT numero_registro
+         FROM public.evento_organizador
+         WHERE id_evento = (SELECT id_evento FROM public.evento WHERE nombre = 'Simposio de Administración 2025' LIMIT 1)
+           AND id_usuario = (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'coordinador.administracion.avanzada' LIMIT 1)
+         LIMIT 1),
+        'UPDATE','confirmacion','false','true',
+        (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'coordinadora.administracion.basica' LIMIT 1),
+        CURRENT_TIMESTAMP),
+
+    ('participacion',
+        (SELECT numero_registro
+         FROM public.participacion
+         WHERE id_evento = (SELECT id_evento FROM public.evento WHERE nombre = 'Taller de Liderazgo Empresarial' LIMIT 1)
+           AND id_integrante = (SELECT id_integrante FROM public.integrante
+                                WHERE nombre = 'Juan' AND apellido_paterno = 'Pérez' AND apellido_materno = 'Gómez'
+                                LIMIT 1)
+         LIMIT 1),
+        'UPDATE','id_rol_participacion',
+        '40',
+        (SELECT CAST(id_rol_participacion AS TEXT)
+         FROM public.rol_participacion
+         WHERE nombre = 'Ponente'
+         LIMIT 1),
+        (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'coordinador.contabilidad.avanzada' LIMIT 1),
+        CURRENT_TIMESTAMP),
+
+    ('area_inventario',
+        (SELECT numero_registro
+         FROM public.area_inventario
+         WHERE id_area = (SELECT id_area FROM public.area WHERE nombre = 'Actos' LIMIT 1)
+           AND id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Paño azul' LIMIT 1)
+         LIMIT 1),
+        'UPDATE','cantidad','3','5',
+        (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'secretario.difusioncultural' LIMIT 1),
+        CURRENT_TIMESTAMP),
+
+    ('recinto_inventario',
+        (SELECT numero_registro
+         FROM public.recinto_inventario
+         WHERE id_recinto = (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio C.P. Tomás López Sánchez' LIMIT 1)
+           AND id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Equipo de sonido' LIMIT 1)
+         LIMIT 1),
+        'UPDATE','cantidad','0','1',
+        (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'secretario.difusioncultural' LIMIT 1),
+        CURRENT_TIMESTAMP),
+
+    ('recinto',
+        (SELECT id_recinto
+         FROM public.recinto
+         WHERE nombre = 'Auditorio Mtro. Carlos Pérez del Toro'
+         LIMIT 1),
+        'UPDATE','nombre','Pepe el Toro','Auditorio Mtro. Carlos Pérez del Toro',
+        (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'secretario.difusioncultural' LIMIT 1),
+        CURRENT_TIMESTAMP),
+
+    ('usuario',
+        (SELECT id_usuario
+         FROM public.usuario
+         WHERE nombre_usuario = 'coordinadora.administrativa'
+         LIMIT 1),
+        'UPDATE','nombre_usuario','administrador supremo','coordinadora.administrativa',
+        (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'secretario.difusioncultural' LIMIT 1),
+        CURRENT_TIMESTAMP);
+
 
 COMMIT;
