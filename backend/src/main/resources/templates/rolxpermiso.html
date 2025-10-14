@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <title>Rol x Permiso</title>
+  </head>
+  <body>
+    <h1>Rol x Permiso</h1>
+    <table border="1"><thead><tr><th>Rol</th><th>Recurso</th><th>Acción</th><th>Alcance</th></tr></thead>
+    <tbody><tr th:each="it : ${items}"><td th:text="${it.rol}}"></td><td th:text="${it.recurso}}"></td><td th:text="${it.accion}}"></td><td th:text="${it.alcance}}"></td></tr></tbody>
+    </table>
+  </body></html>

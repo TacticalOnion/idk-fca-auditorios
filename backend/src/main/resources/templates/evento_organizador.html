@@ -1,0 +1,5 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Evento Organizador</title></head><body>
+<h1>Evento Organizador</h1>
+<table border="1"><thead><tr><th>Evento</th><th>Organizador</th><th>Confirmación</th><th>Núm. Registro</th></tr></thead>
+<tbody><tr th:each="it : ${items}"><td th:text="${it.evento}"></td><td th:text="${it.organizador}"></td><td th:text="${it.confirmacion}"></td><td th:text="${it.numeroRegistro}"></td></tr></tbody>
+</table></body></html>

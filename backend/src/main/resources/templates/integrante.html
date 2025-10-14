@@ -1,0 +1,5 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Integrantes</title></head><body>
+<h1>Integrantes</h1>
+<table border="1"><thead><tr><th>ID</th><th>Nombre</th><th>Apellido Paterno</th><th>Apellido Materno</th><th>Semblanza</th></tr></thead>
+<tbody><tr th:each="it : ${items}"><td th:text="${it.idIntegrante}"></td><td th:text="${it.nombre}"></td><td th:text="${it.apellidoPaterno}"></td><td th:text="${it.apellidoMaterno}"></td><td th:text="${it.semblanza}"></td></tr></tbody>
+</table></body></html

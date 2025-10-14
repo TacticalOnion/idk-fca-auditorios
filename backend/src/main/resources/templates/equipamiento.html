@@ -1,0 +1,5 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Equipamiento</title></head><body>
+<h1>Equipamiento</h1>
+<table border="1"><thead><tr><th>ID</th><th>Nombre</th><th>Activo</th><th>Área</th></tr></thead>
+<tbody><tr th:each="it : ${items}"><td th:text="${it.idEquipamiento}"></td><td th:text="${it.nombre}"></td><td th:text="${it.activo}"></td><td th:text="${it.area}"></td></tr></tbody>
+</table></body></html>

@@ -1,0 +1,5 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Reservación x Equipamiento</title></head><body>
+<h1>Reservación x Equipamiento</h1>
+<table border="1"><thead><tr><th>Evento</th><th>Recinto</th><th>Equipamiento</th><th>Cantidad</th></tr></thead>
+<tbody><tr th:each="it : ${items}"><td th:text="${it.evento}"></td><td th:text="${it.recinto}"></td><td th:text="${it.equipamiento}"></td><td th:text="${it.cantidad}"></td></tr></tbody>
+</table></body></html>

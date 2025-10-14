@@ -1,0 +1,5 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Fotografías</title></head><body>
+<h1>Fotografías</h1>
+<table border="1"><thead><tr><th>ID</th><th>Archivo</th><th>Recinto</th></tr></thead>
+<tbody><tr th:each="it : ${items}"><td th:text="${it.idFotografia}"></td><td th:text="${it.fotografia}"></td><td th:text="${it.recinto}"></td></tr></tbody>
+</table></body></html>

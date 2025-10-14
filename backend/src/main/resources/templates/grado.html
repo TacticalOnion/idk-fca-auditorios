@@ -1,0 +1,5 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Grados</title></head><body>
+<h1>Grados</h1>
+<table border="1"><thead><tr><th>ID</th><th>Título</th><th>Nivel</th><th>Institución</th><th>País</th></tr></thead>
+<tbody><tr th:each="it : ${items}"><td th:text="${it.idGrado}"></td><td th:text="${it.titulo}"></td><td th:text="${it.nivel}"></td><td th:text="${it.institucion}"></td><td th:text="${it.pais}"></td></tr></tbody>
+</table></body></html>

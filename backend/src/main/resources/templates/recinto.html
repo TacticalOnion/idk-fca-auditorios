@@ -1,0 +1,13 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Recintos</title></head><body>
+<h1>Recintos</h1>
+<table border="1"><thead>
+<tr>
+<th>ID</th><th>Nombre</th><th>Latitud</th><th>Longitud</th><th>Aforo</th>
+<th>Croquis</th><th>Activo</th><th>Tipo</th>
+</tr></thead>
+<tbody>
+<tr th:each="it : ${items}">
+<td th:text="${it.idRecinto}"></td><td th:text="${it.nombre}"></td><td th:text="${it.latitud}"></td><td th:text="${it.longitud}"></td>
+<td th:text="${it.aforo}"></td><td th:text="${it.croquis}"></td><td th:text="${it.activo}"></td><td th:text="${it.tipo}"></td>
+</tr>
+</tbody></table></body></html>
