@@ -1,10 +1,9 @@
-import React, { useMemo, useState, useContext, createContext } from "react"
+import React, { useMemo, useState, useContext, useEffect, createContext } from "react"
 import { BrowserRouter, Routes, Route, Link, Navigate, useParams, useLocation } from "react-router-dom"
 import './App.css'
+import type { DataSet, Json, Row } from "./types/dataset";
 
-type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
-type Row = Record<string, Json>;
-type DataSet = Record<string, Row[]>;
+import { fetchDataset} from "./api/client";
 
 type RefSpec = {
   targetTable: string;
@@ -359,39 +358,8 @@ function humanLabel(table: string) {
   return table.replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
 }
 
-function GlobalLoader() {
-  const { setData, setFileName, setSuccess } = useData();
-  async function handleFile(file: File) {
-    const text = await file.text();
-    try {
-      const parsed = JSON.parse(text);
-      if (!parsed || typeof parsed !== "object") throw new Error("JSON inválido");
-      setData(parsed);
-      setFileName(file.name);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (e) {
-      alert(`No se pudo leer el JSON: ${(e as Error).message}`);
-    }
-  }
-  return (
-    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 hover:bg-gray-50">
-      <input
-        type="file"
-        accept="application/json"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handleFile(f);
-        }}
-      />
-      <span>Cargar JSON…</span>
-    </label>
-  );
-}
-
 function Layout({ children }: { children: React.ReactNode }) {
-  const { data, fileName, success } = useData();
+  const { data} = useData();
   const presentTables = useMemo(
     () => (Object.keys(data).length ? Object.keys(data).sort() : Object.keys(TABLES).sort()),
     [data]
@@ -405,15 +373,7 @@ function Layout({ children }: { children: React.ReactNode }) {
             <img src="/idk-logo.svg" alt="Logo FCA" className="w-8 h-8" />
             <h1 className="text-2xl font-bold">FCA Auditorios</h1>
           </div>
-          <p className="text-gray-600">Cada tabla tiene su propia ruta. Sube un JSON global.</p>
-          {fileName && (
-            <p className="text-sm text-gray-700">
-              Archivo cargado: <strong>{fileName}</strong>
-            </p>
-          )}
-          {success && <p className="text-sm text-green-600 font-semibold">✅ Archivo cargado exitosamente</p>}
         </div>
-        <GlobalLoader />
       </header>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
         <aside className="md:col-span-3 lg:col-span-2">
@@ -528,8 +488,26 @@ function Home() {
 
 function App() {
   const [data, setData] = useState<DataSet>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const ds = await fetchDataset();
+        setData(ds);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  if (loading) return <div>Cargando…</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <DataCtx.Provider value={{ data, setData, fileName, setFileName, success, setSuccess }}>
