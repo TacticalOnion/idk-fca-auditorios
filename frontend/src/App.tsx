@@ -80,7 +80,7 @@ const TABLES: Record<string, TableSpec> = {
 
   // integrante
   integrante: {
-    computed: { nombre_completo: (r) => `${r.nombre} ${r.apellido_paterno} ${r.apellido_materno}`.trim() },
+    computed: { nombre_completo: (r) => `${r.nombre} ${r.apellidoPaterno} ${r.apellidoMaterno}`.trim() },
     hide: ["id_integrante"],
     preferColumns: ["nombre_completo", "semblanza"],
   },
@@ -103,15 +103,6 @@ const TABLES: Record<string, TableSpec> = {
       id_grado: { targetTable: "grado", displayFields: ["titulo"] },
     },
     preferColumns: ["id_integrante", "id_grado"],
-  },
-
-  // rolxpermiso: id_rol_usuario = rol_usuario(nombre), id_permiso = permiso(recurso,accion,alcance)
-  rolxpermiso: {
-    refs: {
-      id_rol_usuario: { targetTable: "rol_usuario", displayFields: ["nombre"] },
-      id_permiso: { targetTable: "permiso", displayFields: ["recurso", "accion", "alcance"], separator: " · " },
-    },
-    preferColumns: ["id_rol_usuario", "id_permiso"],
   },
 
   // evento_organizador: id_evento = evento(nombre), id_usuario = usuario(...)
