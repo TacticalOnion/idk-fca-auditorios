@@ -67,6 +67,20 @@ En caso de que necesites borrar el esquema de datos en local para volver a ejecu
 ```shell
 .\mvnw flyway:clean "-Dflyway.cleanDisabled=false"
 ```
+
+## Probar API
+Para probar la API sin el frontend ejecuta el siguiente comando:
+
+```shell
+curl.exe -u user:pasword http://localhost:8080/api/export
+```
+
+> ✏️ **Notas**
+> Recuerda usar el usuario y contraseña que registraste en `.env` : 
+> * `SPRING_SECURITY_USER_NAME`
+> * `SPRING_SECURITY_USER_PASSWORD`
+
+
 ## 📌 Modelo de datos
 ![Modelo de datos](../docs/database/modelo_de_datos.svg)
 
