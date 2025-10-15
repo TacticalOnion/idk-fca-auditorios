@@ -51,7 +51,7 @@ const TABLES: Record<string, TableSpec> = {
       id_rol_usuario: { targetTable: "rol_usuario", displayFields: ["nombre"] },
       id_puesto: { targetTable: "puesto", displayFields: ["nombre"] },
     },
-    computed: { nombre_completo: (r) => `${r.nombre} ${r.apellido_paterno} ${r.apellido_materno}`.trim() },
+    computed: { nombre_completo: (r) => `${r.nombre} ${r.apellidoPaterno} ${r.apellidoMaterno}`.trim() },
     hide: ["id_usuario", "contrasenia", "rfc", "telefono", "celular", "foto_usuario"],
     preferColumns: ["nombre_usuario", "nombre_completo", "correo", "activo", "id_rol_usuario", "id_puesto"],
   },
