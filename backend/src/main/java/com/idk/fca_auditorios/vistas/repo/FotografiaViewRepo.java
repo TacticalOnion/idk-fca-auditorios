@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface FotografiaViewRepo extends JpaRepository<Permiso, Short> {
   @Query(value = """
-      SELECT f.id_fotografia AS idFotografia,
+    SELECT f.id_fotografia AS idFotografia,
       f.fotografia AS fotografia,
       r.nombre AS recinto
     FROM fotografia f
