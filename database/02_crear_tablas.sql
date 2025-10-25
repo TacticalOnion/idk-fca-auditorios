@@ -399,7 +399,7 @@ CREATE TABLE IF NOT EXISTS public.puesto (
     -- ck
     CONSTRAINT ck_puesto_nombre_no_vacio CHECK (btrim(nombre) <> ''),
     -- uq
-    CONSTRAINT uq_puesto_nombre UNIQUE (nombre)
+    CONSTRAINT uq_puesto_nombre_area UNIQUE (nombre,id_area)
 );
 -- documentacion
 -- tabla
@@ -412,7 +412,7 @@ COMMENT ON COLUMN public.puesto.id_area IS 'Area al que pertenece el puesto';
 -- ck
 COMMENT ON CONSTRAINT ck_puesto_nombre_no_vacio ON public.puesto IS 'Se asegura de que el valor del nombre no esté vacío';
 -- uq
-COMMENT ON CONSTRAINT uq_puesto_nombre ON public.puesto IS 'Se asegura de que no haya dos puestos con el mismo nombre';
+COMMENT ON CONSTRAINT uq_puesto_nombre_area ON public.puesto IS 'Se asegura de que no haya dos puestos iguales';
 
 ---------------------------------------------------------
 -- usuario
