@@ -1486,7 +1486,7 @@ VALUES
     -- Asociados al MEGA "Seminario de Informática 2025" (3)
     ('Taller: Microservicios en práctica',
         'Laboratorio práctico de diseño y despliegue de microservicios.',
-        '2025-11-04','2025-11-04','09:00','11:30',
+        '2025-11-04','2025-11-04','10:00','11:30',
         TRUE, TRUE, 'pendiente', NULL, FALSE,
         '2025-10-30 18:00',
         (SELECT id_categoria 
@@ -1516,7 +1516,7 @@ VALUES
 
     ('Charla: Observabilidad moderna',
         'Trazas, métricas y logs para SRE.',
-        '2025-11-05','2025-11-05','15:00','16:30',
+        '2025-11-05','2025-11-05','15:00','16:00',
         TRUE, TRUE, 'pendiente', NULL, FALSE,
         '2025-10-30 18:00',
         (SELECT id_categoria 

@@ -25,6 +25,8 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_set_default_fecha_fin ON public.evento;
+
 CREATE TRIGGER trg_set_default_fecha_fin
 BEFORE INSERT ON public.evento
 FOR EACH ROW
@@ -111,6 +113,8 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_set_default_id_cal_evento ON public.evento;
+
 CREATE TRIGGER trg_set_default_id_cal_evento
 BEFORE INSERT OR UPDATE ON public.evento
 FOR EACH ROW
@@ -230,6 +234,8 @@ $$;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_validar_equipamiento_autorizacion ON public.evento;
+
 CREATE TRIGGER trg_validar_equipamiento_autorizacion
 BEFORE INSERT OR UPDATE OF estatus, fecha_inicio, fecha_fin, horario_inicio, horario_fin
 ON public.evento
@@ -318,6 +324,8 @@ $$;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_validar_ventana_registro_evento ON public.evento;
+
 CREATE TRIGGER trg_validar_ventana_registro_evento
 BEFORE INSERT OR UPDATE OF fecha_inicio, fecha_registro
 ON public.evento
@@ -354,6 +362,8 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_evento_rfc_upper ON public.usuario;
+
 CREATE TRIGGER trg_evento_rfc_upper
 BEFORE INSERT OR UPDATE ON public.usuario
 FOR EACH ROW
@@ -369,80 +379,44 @@ COMMENT ON TRIGGER trg_evento_rfc_upper ON public.usuario
 IS 'Fuerza a que el RFC se almacene en mayúsculas';
 ---------------------------------------------------------
 /*
-nombre: fun_validar_evento_fuera_de_periodos
+nombre: fun_check_evento_no_en_periodo
 descripcion: 
-        Función que valida que el evento no coincida con ningún periodo escolar
-        no valido, ejemplo: vacaciones administrativas, intersemestrales, dias inhábiles, etc.
-disparador: trg_validar_evento_fuera_de_periodos
+    Función que verifica que un evento no se solape con periodos existentes en el calendario escolar.
+disparador: trg_evento_no_en_periodo
 */
 ---------------------------------------------------------
 -- funcion
 ---------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.fun_validar_evento_fuera_de_periodos()
+CREATE OR REPLACE FUNCTION public.fun_check_evento_no_en_periodo()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    -- Periodo con el que se detectó traslape
-    v_p_nombre       text;
-    v_p_id           bigint;
-    v_p_ini          date;
-    v_p_fin          date;
-
-    -- Ventana exacta de traslape
-    v_overlap_ini    date;
-    v_overlap_fin    date;
+    conflicto RECORD;
 BEGIN
-    -- Asegurar datos necesarios
-    IF NEW.id_calendario_escolar IS NULL THEN
-        RAISE EXCEPTION 'id_calendario_escolar no puede ser NULL para validar traslapes con periodos';
-    END IF;
-
+    -- Por seguridad (aunque ya hay CHECKs)
     IF NEW.fecha_inicio IS NULL OR NEW.fecha_fin IS NULL THEN
-        RAISE EXCEPTION 'fecha_inicio y fecha_fin no pueden ser NULL para validar traslapes con periodos';
+        RETURN NEW;
     END IF;
 
-    -- Validación de rango propio (por si la tabla no tiene un check)
-    IF NEW.fecha_inicio > NEW.fecha_fin THEN
-        RAISE EXCEPTION 'fecha_inicio no puede ser mayor que fecha_fin';
-    END IF;
-
-    /*
-      Regla: el evento NO debe traslaparse con NINGÚN periodo del mismo calendario.
-      Traslape inclusivo si:
-        NEW.fecha_inicio <= p.fecha_fin  AND  NEW.fecha_fin >= p.fecha_inicio
-    */
-    SELECT
-        COALESCE(p.nombre, NULL), p.id_periodo, p.fecha_inicio, p.fecha_fin
-    INTO
-        v_p_nombre,           v_p_id,      v_p_ini,      v_p_fin
-    FROM public.periodo p
-    WHERE p.id_calendario_escolar = NEW.id_calendario_escolar
-      AND NEW.fecha_inicio <= p.fecha_fin
-      AND NEW.fecha_fin    >= p.fecha_inicio
-    ORDER BY p.fecha_inicio
-    LIMIT 1;
+    -- Verifica solapamiento de rangos de fecha con cualquier periodo del mismo calendario
+    SELECT p.id_periodo, p.fecha_inicio, p.fecha_fin, tp.nombre
+      INTO conflicto
+      FROM public.periodo p
+      JOIN public.tipo_periodo tp USING (id_tipo_periodo)
+     WHERE p.id_calendario_escolar = NEW.id_calendario_escolar
+       AND daterange(p.fecha_inicio, p.fecha_fin, '[]')
+           && daterange(NEW.fecha_inicio, NEW.fecha_fin, '[]')
+     LIMIT 1;
 
     IF FOUND THEN
-        v_overlap_ini := GREATEST(NEW.fecha_inicio, v_p_ini);
-        v_overlap_fin := LEAST(NEW.fecha_fin,      v_p_fin);
-
         RAISE EXCEPTION
-            USING
-                MESSAGE = 'El evento se traslapa con un periodo del mismo calendario escolar.',
-                DETAIL  = format(
-                    'evento: %s [%s → %s]; periodo: %s (id=%s) [%s → %s]; traslape: [%s → %s]',
-                    COALESCE(NEW.nombre, '(sin nombre)'),
-                    to_char(NEW.fecha_inicio, 'YYYY-MM-DD'),
-                    to_char(NEW.fecha_fin,    'YYYY-MM-DD'),
-                    COALESCE(v_p_nombre, '(sin nombre)'),
-                    v_p_id::text,
-                    to_char(v_p_ini, 'YYYY-MM-DD'),
-                    to_char(v_p_fin, 'YYYY-MM-DD'),
-                    to_char(v_overlap_ini, 'YYYY-MM-DD'),
-                    to_char(v_overlap_fin, 'YYYY-MM-DD')
-                ),
-                HINT    = 'Ajusta las fechas del evento para que no coincidan con ningún periodo de este calendario.';
+            'El evento (%–%) se traslapa con un período "%": %–% (id=%) del calendario escolar %',
+            NEW.fecha_inicio, NEW.fecha_fin,
+            conflicto.nombre, conflicto.fecha_inicio, conflicto.fecha_fin,
+            conflicto.id_periodo, NEW.id_calendario_escolar
+        USING ERRCODE = 'check_violation',
+              HINT = 'No se permiten eventos durante vacaciones, días inhábiles, exámenes u otros periodos del calendario escolar.';
     END IF;
 
     RETURN NEW;
@@ -451,19 +425,24 @@ $$;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
-CREATE TRIGGER trg_validar_evento_fuera_de_periodos
-BEFORE INSERT OR UPDATE ON public.evento
+DROP TRIGGER IF EXISTS trg_evento_no_en_periodo ON public.evento;
+
+CREATE TRIGGER trg_evento_no_en_periodo
+BEFORE INSERT OR UPDATE OF fecha_inicio, fecha_fin, id_calendario_escolar
+ON public.evento
 FOR EACH ROW
-EXECUTE FUNCTION public.fun_validar_evento_fuera_de_periodos();
+EXECUTE FUNCTION public.fun_check_evento_no_en_periodo();
+
 ---------------------------------------------------------
 -- documentacion
 ---------------------------------------------------------
 -- funcion
-COMMENT ON FUNCTION public.fun_validar_evento_fuera_de_periodos() 
-IS 'Función que valida que el evento no coincida con ningún periodo escolar no valido, ejemplo: vacaciones administrativas, intersemestrales, dias inhábiles, etc';
+COMMENT ON FUNCTION public.fun_check_evento_no_en_periodo()
+IS 'Función que verifica que un evento no se solape con periodos existentes en el calendario escolar.';
 -- trigger
-COMMENT ON TRIGGER trg_validar_evento_fuera_de_periodos ON public.evento 
-IS 'Valida que el evento no coincida con ningún periodo escolar no valido';
+COMMENT ON TRIGGER trg_evento_no_en_periodo ON public.evento
+IS 'Verifica que un evento no se solape con periodos existentes en el calendario escolar.';
+
 ---------------------------------------------------------
 /*
 nombre: fun_periodo_dentro_del_calendario
@@ -514,6 +493,8 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_periodo_dentro_del_calendario ON public.periodo;
+
 CREATE TRIGGER trg_periodo_dentro_del_calendario
 BEFORE INSERT OR UPDATE ON public.periodo
 FOR EACH ROW
@@ -527,43 +508,6 @@ IS 'Función que valida que un periodo esté completamente dentro del rango de u
 -- trigger
 COMMENT ON TRIGGER trg_periodo_dentro_del_calendario ON public.periodo 
 IS 'Valida que el periodo esté completamente dentro del rango de un semestre académico.';
----------------------------------------------------------
-/*
-    nombre: fun_validar_fecha_fin
-    descripcion: 
-        Función que valida que si puesto_actual es TRUE, fecha_fin debe ser igual a CURRENT_DATE
-    disparador: trg_fun_validar_fecha_fin
-*/
----------------------------------------------------------
--- funcion
----------------------------------------------------------
-CREATE OR REPLACE FUNCTION fun_validar_fecha_fin()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.puesto_actual = TRUE AND NEW.fecha_fin <> CURRENT_DATE THEN
-        RAISE EXCEPTION 'Si puesto_actual es TRUE, fecha_fin debe ser igual a CURRENT_DATE';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
----------------------------------------------------------
--- trigger
----------------------------------------------------------
-CREATE TRIGGER trg_fun_validar_fecha_fin
-BEFORE INSERT OR UPDATE ON experiencia
-FOR EACH ROW
-EXECUTE FUNCTION fun_validar_fecha_fin();
----------------------------------------------------------
--- documentacion
----------------------------------------------------------
--- funcion
-COMMENT ON FUNCTION fun_validar_fecha_fin() 
-IS 'Función que valida que si puesto_actual es TRUE, fecha_fin debe ser igual a CURRENT_DATE';
--- trigger
-COMMENT ON TRIGGER trg_fun_validar_fecha_fin ON experiencia 
-IS 'Valida que si puesto_actual es TRUE, fecha_fin debe ser igual a CURRENT_DATE';
-
 ---------------------------------------------------------
 /*
     nombre: fun_verificar_conflictos_evento
@@ -670,6 +614,8 @@ $$;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_evento_evitar_autorizados_traslapados ON public.evento;
+
 CREATE TRIGGER trg_evento_evitar_autorizados_traslapados
 BEFORE INSERT OR UPDATE OF estatus, fecha_inicio, fecha_fin, horario_inicio, horario_fin
 ON public.evento
@@ -720,6 +666,8 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_fun_verificar_solapamiento_semestres ON calendario_escolar;
+
 CREATE TRIGGER trg_fun_verificar_solapamiento_semestres
 BEFORE INSERT OR UPDATE
 ON calendario_escolar
@@ -817,6 +765,8 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_fun_validar_evento_en_mega_evento ON public.evento;
+
 CREATE TRIGGER trg_fun_validar_evento_en_mega_evento
 BEFORE INSERT OR UPDATE
 ON public.evento
