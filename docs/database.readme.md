@@ -31,7 +31,7 @@ psql -U postgres -f 00_borrar_base_de_datos.sql
 ```psql
 psql -U postgres -d fca_auditorios -f 00_exportar_datos.sql
 ```
-## Ver triggers
+## Listar triggers
 ```psql
 psql -U postgres -d fca_auditorios -f 00_listar_triggers.sql
 ```
