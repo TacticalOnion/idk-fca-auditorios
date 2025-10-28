@@ -399,15 +399,20 @@ COMMENT ON CONSTRAINT ck_rango_fechas ON public.periodo IS 'Se asegura de que la
 CREATE TABLE IF NOT EXISTS public.puesto (
     id_puesto SMALLINT GENERATED ALWAYS AS IDENTITY,
     nombre VARCHAR(100) NOT NULL,
+    unico BOOLEAN NOT NULL DEFAULT True,
     activo BOOLEAN NOT NULL DEFAULT True,
     id_area SMALLINT NOT NULL,
+    id_jefe SMALLINT NULL DEFAULT NULL,
     -- pk
     CONSTRAINT pk_puesto PRIMARY KEY (id_puesto),
     -- fk
     CONSTRAINT fk_area FOREIGN KEY (id_area) REFERENCES public.area (id_area) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_jefe FOREIGN KEY (id_jefe) REFERENCES public.puesto (id_puesto) ON DELETE RESTRICT ON UPDATE CASCADE,
     -- ck
     CONSTRAINT ck_puesto_nombre_no_vacio CHECK (btrim(nombre) <> ''),
+    CONSTRAINT ck_puesto_id_jefe_no_igual CHECK (id_jefe IS NULL OR id_jefe <> id_puesto),
     -- uq
+    CONSTRAINT uq_puesto_nombre UNIQUE(nombre),
     CONSTRAINT uq_puesto_nombre_area UNIQUE (nombre,id_area)
 );
 -- documentacion
@@ -418,9 +423,12 @@ COMMENT ON COLUMN public.puesto.id_puesto IS 'Identificador del puesto en la fac
 COMMENT ON COLUMN public.puesto.nombre IS 'Nombre del puesto';
 COMMENT ON COLUMN public.puesto.activo IS 'Indica si el puesto esta activo o no';
 COMMENT ON COLUMN public.puesto.id_area IS 'Area al que pertenece el puesto';
+COMMENT ON COLUMN public.puesto.id_jefe IS 'Jefe del puesto';
 -- ck
+COMMENT ON CONSTRAINT ck_puesto_id_jefe_no_igual ON public.puesto IS 'Se segura de que no haya autoreferencia por parte del mismo puesto';
 COMMENT ON CONSTRAINT ck_puesto_nombre_no_vacio ON public.puesto IS 'Se asegura de que el valor del nombre no esté vacío';
 -- uq
+COMMENT ON CONSTRAINT uq_puesto_nombre ON public.puesto IS 'Se asegura de que no haya dos puestos con el mismo nombre';
 COMMENT ON CONSTRAINT uq_puesto_nombre_area ON public.puesto IS 'Se asegura de que no haya dos puestos iguales';
 
 ---------------------------------------------------------
@@ -1103,12 +1111,14 @@ CREATE TABLE IF NOT EXISTS public.auditoria(
     campo_modificado VARCHAR(50) NULL,
     valor_anterior TEXT NULL,
     valor_nuevo TEXT NULL,
-    id_usuario SMALLINT NOT NULL,
     fecha_hora TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_usuario SMALLINT NOT NULL,
+    id_puesto SMALLINT NOT NULL,
     -- pk
     CONSTRAINT pk_auditoria PRIMARY KEY (id_auditoria),
     -- fk
     CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES public.usuario (id_usuario) ON DELETE RESTRICT ON UPDATE RESTRICT,
+    CONSTRAINT fk_puesto FOREIGN KEY (id_puesto) REFERENCES public.puesto (id_puesto) ON DELETE RESTRICT ON UPDATE RESTRICT,
     -- ck
     CONSTRAINT ck_auditoria_accion CHECK (accion IN ('INSERT', 'UPDATE', 'DELETE')),
     CONSTRAINT ck_auditoria_update_campos CHECK (accion <> 'UPDATE'  OR (campo_modificado IS NOT NULL AND valor_anterior IS NOT NULL AND valor_nuevo IS NOT NULL))

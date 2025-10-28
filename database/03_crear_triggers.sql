@@ -3,16 +3,16 @@ BEGIN;
 
 --------------------------------------------------------
 /*
-nombre: fun_set_default_fecha_fin
+nombre: fun_default_fecha_fin
 descripcion: 
         Establece fecha_fin igual a fecha_inicio si no se proporciona fecha_fin 
         al insertar un nuevo evento.
-disparador: trg_set_default_fecha_fin
+disparador: trg_default_fecha_fin
 */
 ---------------------------------------------------------
 -- funcion
 ---------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.fun_set_default_fecha_fin()
+CREATE OR REPLACE FUNCTION public.fun_default_fecha_fin()
 RETURNS TRIGGER AS $$
 BEGIN
         -- Si fecha_fin no se proporciona, se copia fecha_inicio
@@ -25,34 +25,34 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
-DROP TRIGGER IF EXISTS trg_set_default_fecha_fin ON public.evento;
+DROP TRIGGER IF EXISTS trg_default_fecha_fin ON public.evento;
 
-CREATE TRIGGER trg_set_default_fecha_fin
+CREATE TRIGGER trg_default_fecha_fin
 BEFORE INSERT ON public.evento
 FOR EACH ROW
-EXECUTE FUNCTION public.fun_set_default_fecha_fin();
+EXECUTE FUNCTION public.fun_default_fecha_fin();
 ---------------------------------------------------------
 -- documentacion
 ---------------------------------------------------------
 -- funcion
-COMMENT ON FUNCTION public.fun_set_default_fecha_fin()
-IS 'Función disparada por trg_set_default_fecha_fin. Establece fecha_fin igual a fecha_inicio por default';
+COMMENT ON FUNCTION public.fun_default_fecha_fin()
+IS 'Función disparada por trg_default_fecha_fin. Establece fecha_fin igual a fecha_inicio por default';
 -- trigger
-COMMENT ON TRIGGER trg_set_default_fecha_fin ON public.evento
+COMMENT ON TRIGGER trg_default_fecha_fin ON public.evento
 IS 'Establece fecha_fin igual a fecha_inicio si no se proporciona fecha_fin al insertar un nuevo evento'; 
 ---------------------------------------------------------
 /*
-nombre: fun_set_default_id_calendario_escolar_evento
+nombre: fun_default_id_calendario_escolar_evento
 descripcion: 
         Establece id_calendario_escolar por default el valor del id del
         ultimo calendario_escolar que contenga el rango del evento. Si el usuario
         proporciona un id_calendario_escolar, valida que el rango del evento
-disparador: trg_set_default_id_cal_evento
+disparador: trg_default_id_calendario_escolar_evento
 */
 ---------------------------------------------------------
 -- funcion
 ---------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.fun_set_default_id_calendario_escolar_evento()
+CREATE OR REPLACE FUNCTION public.fun_default_id_calendario_escolar_evento()
 RETURNS TRIGGER AS $$
 DECLARE
         v_id_cal SMALLINT;
@@ -113,20 +113,20 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
-DROP TRIGGER IF EXISTS trg_set_default_id_cal_evento ON public.evento;
+DROP TRIGGER IF EXISTS trg_default_id_calendario_escolar_evento ON public.evento;
 
-CREATE TRIGGER trg_set_default_id_cal_evento
+CREATE TRIGGER trg_default_id_calendario_escolar_evento
 BEFORE INSERT OR UPDATE ON public.evento
 FOR EACH ROW
-EXECUTE FUNCTION public.fun_set_default_id_calendario_escolar_evento();
+EXECUTE FUNCTION public.fun_default_id_calendario_escolar_evento();
 ---------------------------------------------------------
 -- documentacion
 ---------------------------------------------------------
 -- funcion
-COMMENT ON FUNCTION public.fun_set_default_id_calendario_escolar_evento()
-IS 'Función disparada por trg_set_default_id_cal_evento. Establece id_calendario_escolar por default o valida su contención';
+COMMENT ON FUNCTION public.fun_default_id_calendario_escolar_evento()
+IS 'Función disparada por trg_default_id_calendario_escolar_evento. Establece id_calendario_escolar por default o valida su contención';
 -- trigger
-COMMENT ON TRIGGER trg_set_default_id_cal_evento ON public.evento
+COMMENT ON TRIGGER trg_default_id_calendario_escolar_evento ON public.evento
 IS 'Establece id_calendario_escolar por default o valida su contención al insertar o actualizar un evento';
 
 ---------------------------------------------------------
@@ -379,7 +379,7 @@ COMMENT ON TRIGGER trg_evento_rfc_upper ON public.usuario
 IS 'Fuerza a que el RFC se almacene en mayúsculas';
 ---------------------------------------------------------
 /*
-nombre: fun_check_evento_no_en_periodo
+nombre: fun_verificar_evento_no_en_periodo
 descripcion: 
     Función que verifica que un evento no se solape con periodos existentes en el calendario escolar.
 disparador: trg_evento_no_en_periodo
@@ -387,7 +387,7 @@ disparador: trg_evento_no_en_periodo
 ---------------------------------------------------------
 -- funcion
 ---------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.fun_check_evento_no_en_periodo()
+CREATE OR REPLACE FUNCTION public.fun_verificar_evento_no_en_periodo()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
@@ -431,13 +431,13 @@ CREATE TRIGGER trg_evento_no_en_periodo
 BEFORE INSERT OR UPDATE OF fecha_inicio, fecha_fin, id_calendario_escolar
 ON public.evento
 FOR EACH ROW
-EXECUTE FUNCTION public.fun_check_evento_no_en_periodo();
+EXECUTE FUNCTION public.fun_verificar_evento_no_en_periodo();
 
 ---------------------------------------------------------
 -- documentacion
 ---------------------------------------------------------
 -- funcion
-COMMENT ON FUNCTION public.fun_check_evento_no_en_periodo()
+COMMENT ON FUNCTION public.fun_verificar_evento_no_en_periodo()
 IS 'Función que verifica que un evento no se solape con periodos existentes en el calendario escolar.';
 -- trigger
 COMMENT ON TRIGGER trg_evento_no_en_periodo ON public.evento
@@ -637,7 +637,7 @@ IS 'Disparador que evita la autorización de eventos que se traslapan con otros 
     descripcion: 
 		Función que verifica que no haya solapamiento entre los semestres
 		al insertar o actualizar un calendario escolar.
-    disparador: trg_fun_verificar_solapamiento_semestres
+    disparador: trg_verificar_solapamiento_semestres
 */
 ---------------------------------------------------------
 -- funcion
@@ -666,9 +666,9 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
-DROP TRIGGER IF EXISTS trg_fun_verificar_solapamiento_semestres ON calendario_escolar;
+DROP TRIGGER IF EXISTS trg_verificar_solapamiento_semestres ON calendario_escolar;
 
-CREATE TRIGGER trg_fun_verificar_solapamiento_semestres
+CREATE TRIGGER trg_verificar_solapamiento_semestres
 BEFORE INSERT OR UPDATE
 ON calendario_escolar
 FOR EACH ROW
@@ -684,7 +684,7 @@ IS 'Función que verifica que no haya solapamiento entre los semestres
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
-COMMENT ON TRIGGER trg_fun_verificar_solapamiento_semestres ON public.calendario_escolar
+COMMENT ON TRIGGER trg_verificar_solapamiento_semestres ON public.calendario_escolar
 IS 'Disparador que verifica que no haya solapamiento entre los semestres
 	al insertar o actualizar un calendario escolar.';
 
@@ -693,7 +693,7 @@ IS 'Disparador que verifica que no haya solapamiento entre los semestres
     nombre: fun_validar_evento_en_mega_evento
     descripcion: 
 		Función que valida que un evento hijo esté correctamente relacionado con su mega_evento.
-    disparador: trg_fun_validar_evento_en_mega_evento
+    disparador: trg_validar_evento_en_mega_evento
 */
 ---------------------------------------------------------
 -- funcion
@@ -765,9 +765,9 @@ $$ LANGUAGE plpgsql;
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
-DROP TRIGGER IF EXISTS trg_fun_validar_evento_en_mega_evento ON public.evento;
+DROP TRIGGER IF EXISTS trg_validar_evento_en_mega_evento ON public.evento;
 
-CREATE TRIGGER trg_fun_validar_evento_en_mega_evento
+CREATE TRIGGER trg_validar_evento_en_mega_evento
 BEFORE INSERT OR UPDATE
 ON public.evento
 FOR EACH ROW
@@ -782,7 +782,157 @@ IS 'Función que valida que un evento hijo esté correctamente relacionado con s
 ---------------------------------------------------------
 -- trigger
 ---------------------------------------------------------
-COMMENT ON TRIGGER trg_fun_validar_evento_en_mega_evento ON public.evento
+COMMENT ON TRIGGER trg_validar_evento_en_mega_evento ON public.evento
 IS 'Disparador que valida que un evento hijo esté correctamente relacionado con su mega_evento.';
 
+---------------------------------------------------------
+/*
+    nombre: fun_validar_puesto_unico_en_usuario()
+    descripcion:
+        Verifica, en INSERT o UPDATE de public.usuario (cuando se inserta o cambia id_puesto),
+        que si el puesto asociado tiene unico = true no exista ningún otro usuario con ese mismo
+        id_puesto. Para evitar condiciones de carrera, bloquea la fila del puesto con
+        SELECT ... FOR UPDATE. En caso de conflicto, lanza una excepción 23505 (unique_violation)
+        con una sugerencia de resolución.
+    disparador: trg_validar_puesto_unico_en_usuario
+*/
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.fun_validar_puesto_unico_en_usuario()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_unico              boolean;
+    v_puesto_nombre      text;
+    v_conflict_user_id   smallint;
+    v_conflict_user_name text;
+BEGIN
+    -- ¿El puesto nuevo es único?
+    SELECT p.unico, p.nombre
+      INTO v_unico, v_puesto_nombre
+      FROM public.puesto p
+     WHERE p.id_puesto = NEW.id_puesto;
+
+    IF v_unico IS TRUE THEN
+        -- Bloqueo para evitar carreras
+        PERFORM 1
+          FROM public.puesto p
+         WHERE p.id_puesto = NEW.id_puesto
+         FOR UPDATE;
+
+        -- ¿Ya hay otro usuario con ese puesto?
+        SELECT u.id_usuario,
+               CONCAT_WS(' ', u.nombre, u.apellido_paterno, u.apellido_materno)
+          INTO v_conflict_user_id, v_conflict_user_name
+          FROM public.usuario u
+         WHERE u.id_puesto = NEW.id_puesto
+           AND u.id_usuario IS DISTINCT FROM NEW.id_usuario
+         LIMIT 1;
+
+        IF v_conflict_user_id IS NOT NULL THEN
+            RAISE EXCEPTION
+                'El puesto "%" es único y ya está asignado al usuario % (id=%).',
+                v_puesto_nombre, v_conflict_user_name, v_conflict_user_id
+            USING ERRCODE = '23505',
+                  HINT = 'Desasigna el puesto del otro usuario o establece unico=false en el puesto si aplica.';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+---------------------------------------------------------
+-- trigger
+---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_validar_puesto_unico_en_usuario ON public.usuario;
+
+CREATE TRIGGER trg_validar_puesto_unico_en_usuario
+BEFORE INSERT OR UPDATE OF id_puesto
+ON public.usuario
+FOR EACH ROW
+EXECUTE FUNCTION public.fun_validar_puesto_unico_en_usuario();
+---------------------------------------------------------
+-- documentacion
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+COMMENT ON FUNCTION fun_validar_puesto_unico_en_usuario()
+IS 'Valida en INSERT/UPDATE de public.usuario que, si el puesto referenciado tiene unico=true, no exista otro usuario con el mismo id_puesto. Bloquea la fila del puesto para evitar carreras y lanza 23505 (unique_violation) en caso de conflicto.';
+---------------------------------------------------------
+-- trigger
+---------------------------------------------------------
+COMMENT ON TRIGGER trg_validar_puesto_unico_en_usuario ON public.usuario
+IS 'Disparador BEFORE INSERT/UPDATE OF id_puesto en public.usuario que ejecuta fun_validar_puesto_unico_en_usuario() para asegurar la unicidad de puestos marcados como unico=true.';
+---------------------------------------------------------
+/*
+    nombre: fun_validar_puesto_unico_al_cambiar_bandera()
+    descripcion:
+        Valida en public.puesto, al INSERT o al UPDATE de la columna unico, que al
+        establecer unico = true el puesto no esté asignado a más de un usuario en
+        public.usuario. Bloquea la fila del puesto con SELECT ... FOR UPDATE para
+        evitar condiciones de carrera. Si hay más de un usuario asignado, cancela con
+        excepción 23514 (check_violation) e indica cómo resolverlo.
+    disparador: trg_validar_puesto_unico_al_cambiar_bandera
+*/
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.fun_validar_puesto_unico_al_cambiar_bandera()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_count int;
+BEGIN
+    -- Solo aplica si estamos activando la unicidad
+    IF NEW.unico IS TRUE AND (TG_OP = 'INSERT' OR OLD.unico IS DISTINCT FROM NEW.unico) THEN
+        -- Bloqueamos la fila del puesto para evitar carreras
+        PERFORM 1
+        FROM public.puesto p
+        WHERE p.id_puesto = NEW.id_puesto
+        FOR UPDATE;
+
+        -- Contamos usuarios que ya lo tienen
+        SELECT COUNT(*)
+        INTO v_count
+        FROM public.usuario u
+        WHERE u.id_puesto = NEW.id_puesto;
+
+        IF v_count > 1 THEN
+            RAISE EXCEPTION
+                'No se puede establecer unico=true en el puesto (%) porque ya está asignado a % usuarios.',
+                NEW.id_puesto, v_count
+            USING ERRCODE = '23514', -- check_violation
+                  HINT = 'Desasigna el puesto de los usuarios sobrantes hasta dejar máximo 1, y vuelve a intentarlo.';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+---------------------------------------------------------
+-- trigger
+---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_validar_puesto_unico_al_cambiar_bandera ON public.puesto;
+
+CREATE TRIGGER trg_validar_puesto_unico_al_cambiar_bandera
+BEFORE INSERT OR UPDATE OF unico
+ON public.puesto
+FOR EACH ROW
+EXECUTE FUNCTION public.fun_validar_puesto_unico_al_cambiar_bandera();
+---------------------------------------------------------
+-- documentacion
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+COMMENT ON FUNCTION fun_validar_puesto_unico_al_cambiar_bandera()
+IS 'Valida en INSERT/UPDATE de public.puesto que, al activar unico=true, el puesto no esté asignado a más de un usuario. Bloquea la fila del puesto y lanza 23514 (check_violation) si hay más de un asignado.';
+---------------------------------------------------------
+-- trigger
+---------------------------------------------------------
+COMMENT ON TRIGGER trg_validar_puesto_unico_al_cambiar_bandera ON public.puesto
+IS 'Disparador BEFORE INSERT/UPDATE OF unico en public.puesto que ejecuta fun_validar_puesto_unico_al_cambiar_bandera() para impedir activar unico=true si el puesto ya está asignado a más de un usuario.';
+---------------------------------------------------------
 COMMIT;
