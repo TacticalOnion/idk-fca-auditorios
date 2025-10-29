@@ -133,9 +133,6 @@ export function EventsTableView({
           <Button onClick={exportSelected} disabled={selections.length===0}>
             Descargar seleccionados ({selections.length})
           </Button>
-          <Button onClick={()=> onBulkStatus(selections, 'Autorizado')} disabled={selections.length===0}>
-            Marcar Autorizado
-          </Button>
         </div>
       </div>
 

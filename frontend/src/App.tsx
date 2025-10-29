@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useMemo, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
@@ -6,17 +7,23 @@ import { EventsCalendar } from '@/components/calendar/EventsCalendar'
 import { useEvents } from '@/hooks/useEvents'
 import { EventSheet } from '@/components/events/EventSheet'
 import type { EventItem, Status } from '@/types/event'
+import { isUpcoming } from '@/utils/date' // <-- NUEVO
 
 export default function App() {
   const { events, setEvents } = useEvents()
   const [active, setActive] = useState<'kanban' | 'tabla' | 'calendario'>('kanban')
   const [selected, setSelected] = useState<EventItem | null>(null)
 
+  const visible = useMemo(
+    () => events.filter((e: EventItem) => isUpcoming(e.startDate)), 
+    [events]
+  )
+
   const byStatus = useMemo(() => ({
-    pendiente: events.filter((e: EventItem) => e.status === 'Pendiente'),
-    autorizado: events.filter((e: EventItem) => e.status === 'Autorizado'),
-    cancelado: events.filter((e: EventItem) => e.status === 'Cancelado'),
-  }), [events])
+    pendiente: visible.filter((e: EventItem) => e.status === 'Pendiente'),
+    autorizado: visible.filter((e: EventItem) => e.status === 'Autorizado'),
+    cancelado: visible.filter((e: EventItem) => e.status === 'Cancelado'),
+  }), [visible])
 
   return (
     <div className="min-h-screen p-4 md:p-6">
@@ -35,9 +42,23 @@ export default function App() {
           <KanbanBoard
             data={byStatus}
             onOpen={setSelected}
-            onStatusChange={(id: string, status: Status) => {
+            onStatusChange={(id: string, status: Status, opts?: { cancelReason?: string; clearCancelReason?: boolean }) => {
               setEvents((prev: EventItem[]) =>
-                prev.map((e: EventItem) => (e.id === id ? { ...e, status } : e))
+                prev.map((e: EventItem) => {
+                  if (e.id !== id) return e
+                  // Setea estado normal
+                  const next: EventItem = { ...e, status }
+                  // Si viene cancelReason explícito (al cancelar), lo guardamos
+                  if (typeof opts?.cancelReason !== 'undefined') {
+                    next.cancelReason = opts.cancelReason
+                  }
+                  // Si hay que limpiar motivo (al "deshacer")
+                  if (opts?.clearCancelReason) {
+                    // lo dejamos como undefined para que sea NULL al serializar o guardado
+                    delete next.cancelReason
+                  }
+                  return next
+                })
               )
             }}
           />
