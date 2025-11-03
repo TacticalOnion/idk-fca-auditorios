@@ -513,17 +513,21 @@ CREATE TABLE IF NOT EXISTS public.ponente (
     nombre VARCHAR(50) NOT NULL,
     apellido_paterno VARCHAR(50) NOT NULL,
     apellido_materno VARCHAR(50) NOT NULL,
+    correo VARCHAR(100) NOT NULL,
     id_pais SMALLINT NOT NULL,
     -- pk
     CONSTRAINT pk_ponente PRIMARY KEY (id_ponente),
     -- fk
     CONSTRAINT fk_ponente_pais FOREIGN KEY (id_pais) REFERENCES public.pais (id_pais) ON DELETE RESTRICT ON UPDATE CASCADE,
     -- ck
+    CONSTRAINT ck_ponente_correo CHECK (correo ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     CONSTRAINT ck_ponente_nombre_no_vacio CHECK (btrim(nombre) <> ''),
     CONSTRAINT ck_ponente_apellido_paterno_no_vacio CHECK (btrim(apellido_paterno) <> ''),
     CONSTRAINT ck_ponente_apellido_materno_no_vacio CHECK (btrim(apellido_materno) <> ''),
+    CONSTRAINT ck_ponente_correo_no_vacio CHECK (btrim(correo) <> ''),
     -- uq
-    CONSTRAINT uq_ponente_nombre_completo UNIQUE (nombre, apellido_paterno, apellido_materno)
+    CONSTRAINT uq_ponente_nombre_completo UNIQUE (nombre, apellido_paterno, apellido_materno),
+    CONSTRAINT uq_ponente_correo UNIQUE (correo)
 );
 -- documentacion
 -- tabla
@@ -533,13 +537,17 @@ COMMENT ON COLUMN public.ponente.id_ponente IS 'Identificador del ponente que pa
 COMMENT ON COLUMN public.ponente.nombre IS 'Nombre del ponente';
 COMMENT ON COLUMN public.ponente.apellido_paterno IS 'Apellido paterno del ponente';
 COMMENT ON COLUMN public.ponente.apellido_materno IS 'Apellido materno del ponente';
+COMMENT ON COLUMN public.ponente.correo IS 'Correo para contacto del ponente';
 COMMENT ON COLUMN public.ponente.id_pais IS 'País de origen del ponente';
 -- ck
+COMMENT ON CONSTRAINT ck_ponentre_correo IS 'Se asegura de que el correo tenga un formato válido';
 COMMENT ON CONSTRAINT ck_ponente_nombre_no_vacio ON public.ponente IS 'Se asegura de que el valor del nombre no esté vacío';
 COMMENT ON CONSTRAINT ck_ponente_apellido_paterno_no_vacio ON public.ponente IS 'Se asegura de que el valor del apellido paterno no esté vacío';
 COMMENT ON CONSTRAINT ck_ponente_apellido_materno_no_vacio ON public.ponente IS 'Se asegura de que el valor del apellido materno no esté vacío';
+COMMENT ON CONSTRAINT ck_ponente_correo_no_vacio ON public.ponente IS 'Se asegura de que el valor de correo no esté vacío';
 -- uq
 COMMENT ON CONSTRAINT uq_ponente_nombre_completo ON public.ponente IS 'Se asegura de que no haya dos registros de una misma persona en el catálogo de personas';
+COMMENT ON CONSTRAINT uq_ponente_correo ON public.ponente IS 'Se asegura de que no haya dos correos iguales';
 
 ---------------------------------------------------------
 -- evento

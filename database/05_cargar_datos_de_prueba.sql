@@ -1006,117 +1006,117 @@ VALUES
 ---------------------------------------------------------
 -- ponente
 ---------------------------------------------------------
-INSERT INTO public.ponente (nombre, apellido_paterno, apellido_materno, id_pais) 
+INSERT INTO public.ponente (nombre, apellido_paterno, apellido_materno,correo, id_pais) 
 VALUES
-    ('Ana María','López','Rivera',
+    ('Ana María','López','Rivera','anamaria.lopez.rivera@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Carlos Eduardo','Sánchez','Gómez',
+    ('Carlos Eduardo','Sánchez','Gómez','carloseduardo.sanchez.gomez@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Lucía','Fernández','Morales',
+    ('Lucía','Fernández','Morales','lucia.fernandez.morales@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Jorge Alberto','Ramírez','Torres',
+    ('Jorge Alberto','Ramírez','Torres','jorgealberto.ramirez.torres@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Daniela','Pérez','Castillo',
+    ('Daniela','Pérez','Castillo','daniela.perez.castillo@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Miguel Ángel','Hernández','Cruz',
+    ('Miguel Ángel','Hernández','Cruz','miguelangel.hernandez.cruz@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Sofía','Navarro','Jiménez',
+    ('Sofía','Navarro','Jiménez','sofia.navarro.jimenez@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Ricardo','Ortiz','Martínez',
+    ('Ricardo','Ortiz','Martínez','ricardo.ortiz.martinez@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Paola','Ruiz','Delgado',
+    ('Paola','Ruiz','Delgado','paola.ruiz.delgado@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Víctor Hugo','Cabrera','León',
+    ('Víctor Hugo','Cabrera','León','victorhugo.cabrera.leon@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Gabriela','Torres','Chávez',
+    ('Gabriela','Torres','Chávez','gabriela.torres.chavez@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Alonso','Medina','Rojas',
+    ('Alonso','Medina','Rojas','alonso.medina.rojas@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Karla','Domínguez','Salas',
+    ('Karla','Domínguez','Salas','karla.dominguez.salas@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Diego','Salazar','Varela',
+    ('Diego','Salazar','Varela','diego.salazar.varela@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Fernanda','Aguilar','Pineda',
+    ('Fernanda','Aguilar','Pineda','fernanda.aguilar.pineda@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Manuel','Andrade','Cortés',
+    ('Manuel','Andrade','Cortés','manuel.andrade.cortes@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Beatriz','Castañeda','Luna',
+    ('Beatriz','Castañeda','Luna','beatriz.castaneda.luna@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Rodrigo','Fuentes','Valencia',
+    ('Rodrigo','Fuentes','Valencia','rodrigo.fuentes.valencia@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Elena','Romero','Padilla',
+    ('Elena','Romero','Padilla','elena.romero.padilla@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Héctor','Bautista','Arriaga',
+    ('Héctor','Bautista','Arriaga','hector.bautista.arriaga@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'México')),
-    ('Camila','Herrera','Rosario',
+    ('Camila','Herrera','Rosario','camila.herrera.rosario@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'República Dominicana')),
-    ('Mateo','Núñez','Batista',
+    ('Mateo','Núñez','Batista','mateo.nunez.batista@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'República Dominicana')),
-    ('Juliana','Córdoba','Restrepo',
+    ('Juliana','Córdoba','Restrepo','juliana.cordoba.restrepo@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'Colombia')),
-    ('Santiago','Vélez','Montoya',
+    ('Santiago','Vélez','Montoya','santiago.velez.montoya@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'Colombia')),
-    ('Akira','Tanaka','Nakamura',
+    ('Akira','Tanaka','Nakamura','akira.tanaka.nakamura@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'Japón')),
-    ('Emily','Carter','Thompson',
+    ('Emily','Carter','Thompson','emily.carter.thompson@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'Canadá')),
-    ('Michael','Johnson','Smith',
+    ('Michael','Johnson','Smith','michael.johnson.smith@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'Estados Unidos')),
-    ('Sarah','Williams','Brown',
+    ('Sarah','Williams','Brown','sarah.williams.brown@gmail.com',
         (SELECT id_pais 
             FROM pais 
             WHERE nombre = 'Estados Unidos'));
