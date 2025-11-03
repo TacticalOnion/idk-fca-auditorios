@@ -3,7 +3,7 @@
 </p>
 
 # 🔄️ IDK FCA auditorios
-Aplicación web desarrollada por el equipo **IDK Team** para participar en el **Hackathon “40 años de la Licenciatura en Informática”** de la Facultad de Contaduría y Administración (FCA - UNAM).
+Aplicación web desarrollada por el **equipo IDK** para participar en el **Hackathon “40 años de la Licenciatura en Informática”** de la Facultad de Contaduría y Administración (FCA - UNAM).
 
 Este proyecto responde a la necesidad institucional de gestionar los auditorios y espacios de la FCA, permitiendo el control de eventos de manera eficiente y centralizada.
 
