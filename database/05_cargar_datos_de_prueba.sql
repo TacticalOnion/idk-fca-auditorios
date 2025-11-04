@@ -2401,38 +2401,30 @@ VALUES
 ---------------------------------------------------------
 INSERT INTO public.recinto (nombre,latitud,longitud,aforo,croquis,id_tipo_recinto)
 VALUES
-    ('Auditorio Mtro. Carlos Pérez del Toro',19.324278712159654,-99.18503538465767,480,'/croquis/croquis_auditorio_mtro_carlos_perez_del_toro.png',
-        (SELECT id_tipo_recinto 
-            FROM public.tipo_recinto 
-            WHERE nombre = 'Auditorio')),
-    ('Aula Magna de Profesores Eméritos',19.3245169609446,-99.18476376157348,50,'/croquis/croquis_aula_magna_de_profesores_emeritos.png',
-        (SELECT id_tipo_recinto 
-            FROM public.tipo_recinto 
-            WHERE nombre = 'Aula')),
-    ('Auditorio C.P. Tomás López Sánchez',19.32569018583663,-99.18458590493218,50,'/croquis/croquis_auditorio_cp_tomas_lopez_sanchez.png',
-        (SELECT id_tipo_recinto 
-            FROM public.tipo_recinto 
-            WHERE nombre = 'Auditorio')),
-    ('Centro de Informática (CIFCA)',19.326002426331637,-99.18422689328244,80,'/croquis/croquis_centro_de_informatica_cifca.png',
-        (SELECT id_tipo_recinto 
-            FROM public.tipo_recinto 
-            WHERE nombre = 'Aula')),
-    ('Auditorio C.P. Alfonso Ochoa Ravizé',19.324491252154367,-99.1854765779373,100,'/croquis/croquis_auditorio_cp_alfonso_ochoa_ravize.png',
-        (SELECT id_tipo_recinto 
-            FROM public.tipo_recinto 
-            WHERE nombre = 'Auditorio')),
-    ('Centro de Idiomas (CEDI)',19.32423975000072,-99.18554360862876,40,'/croquis/croquis_centro_de_idiomas_cedi.png',
-        (SELECT id_tipo_recinto 
-            FROM public.tipo_recinto 
-            WHERE nombre = 'Aula')),
-    ('Aula Magna de Investigación',19.32309769543537,-99.18318304205229,50,'/croquis/croquis_aula_magna_de_investigacion.png',
-        (SELECT id_tipo_recinto 
-            FROM public.tipo_recinto 
-            WHERE nombre = 'Aula')),
-    ('Auditorio C.P. Arturo Elizundia Charles',19.32308553191999,-99.18310449475594,50,'/croquis/croquis_auditorio_cp_arturo_elizundia_charles.png',
-        (SELECT id_tipo_recinto 
-            FROM public.tipo_recinto 
-            WHERE nombre = 'Auditorio'));
+    ('Auditorio Mtro. Carlos Pérez del Toro',19.324278712159654,-99.18503538465767,480,
+        'https://www.google.com/maps?q=19.324278712159654,-99.18503538465767',
+        (SELECT id_tipo_recinto FROM public.tipo_recinto WHERE nombre = 'Auditorio')),
+    ('Aula Magna de Profesores Eméritos',19.3245169609446,-99.18476376157348,50,
+        'https://www.google.com/maps?q=19.3245169609446,-99.18476376157348',
+        (SELECT id_tipo_recinto FROM public.tipo_recinto WHERE nombre = 'Aula')),
+    ('Auditorio C.P. Tomás López Sánchez',19.32569018583663,-99.18458590493218,50,
+        'https://www.google.com/maps?q=19.32569018583663,-99.18458590493218',
+        (SELECT id_tipo_recinto FROM public.tipo_recinto WHERE nombre = 'Auditorio')),
+    ('Centro de Informática (CIFCA)',19.326002426331637,-99.18422689328244,80,
+        'https://www.google.com/maps?q=19.326002426331637,-99.18422689328244',
+        (SELECT id_tipo_recinto FROM public.tipo_recinto WHERE nombre = 'Aula')),
+    ('Auditorio C.P. Alfonso Ochoa Ravizé',19.324491252154367,-99.1854765779373,100,
+        'https://www.google.com/maps?q=19.324491252154367,-99.1854765779373',
+        (SELECT id_tipo_recinto FROM public.tipo_recinto WHERE nombre = 'Auditorio')),
+    ('Centro de Idiomas (CEDI)',19.32423975000072,-99.18554360862876,40,
+        'https://www.google.com/maps?q=19.32423975000072,-99.18554360862876',
+        (SELECT id_tipo_recinto FROM public.tipo_recinto WHERE nombre = 'Aula')),
+    ('Aula Magna de Investigación',19.32309769543537,-99.18318304205229,50,
+        'https://www.google.com/maps?q=19.32309769543537,-99.18318304205229',
+        (SELECT id_tipo_recinto FROM public.tipo_recinto WHERE nombre = 'Aula')),
+    ('Auditorio C.P. Arturo Elizundia Charles',19.32308553191999,-99.18310449475594,50,
+        'https://www.google.com/maps?q=19.32308553191999,-99.18310449475594',
+        (SELECT id_tipo_recinto FROM public.tipo_recinto WHERE nombre = 'Auditorio'));
 
 ---------------------------------------------------------
 -- TABLAS HIJA

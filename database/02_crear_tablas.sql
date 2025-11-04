@@ -826,7 +826,7 @@ COMMENT ON COLUMN public.recinto.nombre IS 'Nombre del recinto';
 COMMENT ON COLUMN public.recinto.latitud IS 'Latitud en el que se encuentra ubicado geograficamente el recinto';
 COMMENT ON COLUMN public.recinto.longitud IS 'Longitud en el que se encuentra ubicado geograficamente el recinto';
 COMMENT ON COLUMN public.recinto.aforo IS 'Capacidad maxima de personas que pueden estar en el recinto';
-COMMENT ON COLUMN public.recinto.croquis IS 'Ruta al archivo que almacena el croquis que muestra como llegar al recinto';
+COMMENT ON COLUMN public.recinto.croquis IS 'Link de google maps del croquis que muestra como llegar al recinto';
 COMMENT ON COLUMN public.recinto.activo IS 'Indica si el recinto esta activo o no';
 COMMENT ON COLUMN public.recinto.id_tipo_recinto IS 'Tipo en el que se clasifica el recinto';
 -- ck
