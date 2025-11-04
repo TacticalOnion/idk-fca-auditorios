@@ -935,4 +935,96 @@ IS 'Valida en INSERT/UPDATE de public.puesto que, al activar unico=true, el pues
 COMMENT ON TRIGGER trg_validar_puesto_unico_al_cambiar_bandera ON public.puesto
 IS 'Disparador BEFORE INSERT/UPDATE OF unico en public.puesto que ejecuta fun_validar_puesto_unico_al_cambiar_bandera() para impedir activar unico=true si el puesto ya está asignado a más de un usuario.';
 ---------------------------------------------------------
+/*
+    nombre: fun_estatus_por_fecha
+    descripcion:
+        Determina el estatus correcto de un evento con base en su fecha_inicio.
+        Reglas:
+          - Si p_estatus_actual = 'cancelado' ⇒ se respeta y no se modifica.
+          - Si p_fecha_inicio <= CURRENT_DATE ⇒ estatus 'realizado'.
+          - En cualquier otro caso ⇒ se conserva p_estatus_actual.
+        Esta lógica es usada por:
+          a) Un trigger BEFORE INSERT/UPDATE para garantizar consistencia inmediata
+             en cada escritura sobre public.evento.
+          b) Un job periódico para “ponerse al día” con filas que no han sido
+             modificadas pero cuya fecha ya excedió.
+
+    disparador: trg_actualizar_estatus_evento
+    job: job_actualizar_eventos_realizados()
+*/
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.fun_estatus_por_fecha(
+    p_fecha_inicio DATE,
+    p_estatus_actual VARCHAR
+)
+RETURNS VARCHAR AS $$
+BEGIN
+    -- Si el evento está cancelado, no se modifica
+    IF p_estatus_actual = 'cancelado' THEN
+        RETURN p_estatus_actual;
+    END IF;
+
+    -- Si la fecha de inicio ya pasó o es hoy, cambia a 'realizado'
+    IF p_fecha_inicio <= CURRENT_DATE THEN
+        RETURN 'realizado';
+    END IF;
+
+    -- En cualquier otro caso, deja el estatus actual
+    RETURN p_estatus_actual;
+END;
+$$ LANGUAGE plpgsql;
+
+---------------------------------------------------------
+-- trigger (INSERT & UPDATE)
+---------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.trg_evento_set_estatus()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.estatus := public.fun_estatus_por_fecha(NEW.fecha_inicio, NEW.estatus);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_actualizar_estatus_evento ON public.evento;
+
+CREATE TRIGGER trg_actualizar_estatus_evento
+BEFORE INSERT OR UPDATE ON public.evento
+FOR EACH ROW
+EXECUTE FUNCTION public.trg_evento_set_estatus();
+
+---------------------------------------------------------
+-- job (JOB DIARIO)
+---------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.job_actualizar_eventos_realizados()
+RETURNS void AS $$
+BEGIN
+    UPDATE public.evento e
+    SET estatus = public.fun_estatus_por_fecha(e.fecha_inicio, e.estatus)
+    WHERE e.estatus <> public.fun_estatus_por_fecha(e.fecha_inicio, e.estatus);
+END;
+$$ LANGUAGE plpgsql;
+
+---------------------------------------------------------
+-- documentacion
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+COMMENT ON FUNCTION public.fun_estatus_por_fecha(date, character varying)
+IS 'Retorna el estatus correcto para un evento: respeta "cancelado"; si fecha_inicio <= CURRENT_DATE ⇒ "realizado"; en caso contrario conserva el estatus actual. Usada por trigger y job.';
+
+---------------------------------------------------------
+-- trigger (INSERT & UPDATE)
+---------------------------------------------------------
+COMMENT ON TRIGGER trg_actualizar_estatus_evento ON public.evento
+IS 'Trigger BEFORE INSERT/UPDATE que ajusta NEW.estatus usando fun_estatus_por_fecha para mantener consistencia inmediata.';
+
+---------------------------------------------------------
+-- job (JOB DIARIO)
+---------------------------------------------------------
+COMMENT ON FUNCTION public.job_actualizar_eventos_realizados()
+IS 'Job que sincroniza estatus de eventos ya almacenados: aplica fun_estatus_por_fecha por lotes para poner "realizado" cuando corresponda y nunca pisa "cancelado".';
+---------------------------------------------------------
+
 COMMIT;
