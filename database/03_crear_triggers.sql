@@ -1090,4 +1090,85 @@ COMMENT ON TRIGGER trg_actualizar_ultima_modificacion_area ON public.inventario_
 IS 'Trigger BEFORE UPDATE que actualiza ultima_modificacion al timestamp actual en la tabla inventario_area.';
 
 ---------------------------------------------------------
+/*
+    nombre: fun_generar_croquis_google_maps
+    descripcion:
+        Genera y asigna automáticamente el enlace de Google Maps al campo 'croquis' de public.recinto
+        usando las coordenadas (latitud, longitud). Optimizado para:
+          - INSERT: siempre genera el enlace.
+          - UPDATE: solo re-genera el enlace si cambian latitud o longitud.
+
+        Formato del link:
+          https://www.google.com/maps/search/?api=1&query=<latitud>,<longitud>
+
+        Entradas:
+          - NEW.latitud  (NUMERIC(9,6))
+          - NEW.longitud (NUMERIC(9,6))
+
+        Salida:
+          - NEW con 'croquis' actualizado si corresponde.
+
+        Reglas/garantías:
+          - No altera 'croquis' en UPDATE si no cambian las coordenadas.
+          - Los CHECK de la tabla validan rangos de latitud/longitud.
+          - Satisface NOT NULL y no-vacío de 'croquis' en INSERT.
+
+        Consideraciones:
+          - CURRENT locale: se usa TO_CHAR con formato fijo (6 decimales) sin separadores de miles.
+          - Idempotente ante updates sin cambios de coordenadas.
+*/
+
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.fun_generar_croquis_google_maps()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- En INSERT siempre generamos el enlace
+    IF TG_OP = 'INSERT' THEN
+        NEW.croquis := 'https://www.google.com/maps/search/?api=1&query='
+                       || TRIM(TO_CHAR(NEW.latitud,  'FM999999990.999999'))
+                       || ','
+                       || TRIM(TO_CHAR(NEW.longitud, 'FM999999990.999999'));
+        RETURN NEW;
+    END IF;
+
+    -- En UPDATE solo si cambian latitud o longitud
+    IF NEW.latitud  IS DISTINCT FROM OLD.latitud
+       OR NEW.longitud IS DISTINCT FROM OLD.longitud THEN
+        NEW.croquis := 'https://www.google.com/maps/search/?api=1&query='
+                       || TRIM(TO_CHAR(NEW.latitud,  'FM999999990.999999'))
+                       || ','
+                       || TRIM(TO_CHAR(NEW.longitud, 'FM999999990.999999'));
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+---------------------------------------------------------
+-- trigger (INSERT & UPDATE)
+---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_generar_croquis_google_maps ON public.recinto;
+
+CREATE TRIGGER trg_generar_croquis_google_maps
+BEFORE INSERT OR UPDATE ON public.recinto
+FOR EACH ROW
+EXECUTE FUNCTION public.fun_generar_croquis_google_maps();
+
+---------------------------------------------------------
+-- documentacion
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+COMMENT ON FUNCTION public.fun_generar_croquis_google_maps()
+IS 'Genera automáticamente el enlace de Google Maps en "croquis" (INSERT) y lo actualiza solo si cambian latitud/longitud (UPDATE). Usa formato search/?api=1&query=lat,long con 6 decimales.';
+
+---------------------------------------------------------
+-- trigger (INSERT & UPDATE)
+---------------------------------------------------------
+COMMENT ON TRIGGER trg_generar_croquis_google_maps ON public.recinto
+IS 'BEFORE INSERT/UPDATE: construye "croquis" con Google Maps. En UPDATE solo si cambian latitud o longitud.';
+
+---------------------------------------------------------
 COMMIT;
