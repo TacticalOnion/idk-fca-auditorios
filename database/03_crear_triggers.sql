@@ -1026,5 +1026,68 @@ IS 'Trigger BEFORE INSERT/UPDATE que ajusta NEW.estatus usando fun_estatus_por_f
 COMMENT ON FUNCTION public.job_actualizar_eventos_realizados()
 IS 'Job que sincroniza estatus de eventos ya almacenados: aplica fun_estatus_por_fecha por lotes para poner "realizado" cuando corresponda y nunca pisa "cancelado".';
 ---------------------------------------------------------
+/*
+    nombre: fun_actualizar_ultima_modificacion
+    descripcion:
+        Función genérica que actualiza el campo ultima_modificacion con la marca de tiempo actual
+        cada vez que se modifica un registro en tablas que la implementen mediante un trigger.
+        Aplicada actualmente a:
+            - public.inventario_recinto
+            - public.inventario_area
+        Regla:
+          - En cada operación UPDATE, el campo ultima_modificacion se actualiza a CURRENT_TIMESTAMP.
+*/
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.fun_actualizar_ultima_modificacion()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Actualiza el campo de última modificación a la hora actual del servidor
+    NEW.ultima_modificacion := CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
+---------------------------------------------------------
+-- trigger (UPDATE) - inventario_recinto
+---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_actualizar_ultima_modificacion_recinto ON public.inventario_recinto;
+
+CREATE TRIGGER trg_actualizar_ultima_modificacion_recinto
+BEFORE UPDATE ON public.inventario_recinto
+FOR EACH ROW
+EXECUTE FUNCTION public.fun_actualizar_ultima_modificacion();
+
+---------------------------------------------------------
+-- trigger (UPDATE) - inventario_area
+---------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_actualizar_ultima_modificacion_area ON public.inventario_area;
+
+CREATE TRIGGER trg_actualizar_ultima_modificacion_area
+BEFORE UPDATE ON public.inventario_area
+FOR EACH ROW
+EXECUTE FUNCTION public.fun_actualizar_ultima_modificacion();
+
+---------------------------------------------------------
+-- documentacion
+---------------------------------------------------------
+-- funcion
+---------------------------------------------------------
+COMMENT ON FUNCTION public.fun_actualizar_ultima_modificacion()
+IS 'Actualiza automáticamente el campo ultima_modificacion con CURRENT_TIMESTAMP antes de cualquier UPDATE. Reutilizable por múltiples tablas.';
+
+---------------------------------------------------------
+-- trigger (UPDATE) - inventario_recinto
+---------------------------------------------------------
+COMMENT ON TRIGGER trg_actualizar_ultima_modificacion_recinto ON public.inventario_recinto
+IS 'Trigger BEFORE UPDATE que actualiza ultima_modificacion al timestamp actual en la tabla inventario_recinto.';
+
+---------------------------------------------------------
+-- trigger (UPDATE) - inventario_area
+---------------------------------------------------------
+COMMENT ON TRIGGER trg_actualizar_ultima_modificacion_area ON public.inventario_area
+IS 'Trigger BEFORE UPDATE que actualiza ultima_modificacion al timestamp actual en la tabla inventario_area.';
+
+---------------------------------------------------------
 COMMIT;

@@ -1034,6 +1034,7 @@ CREATE TABLE IF NOT EXISTS public.inventario_area (
     id_area SMALLINT,
     cantidad SMALLINT NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT True,
+    ultima_modificacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- pk
     CONSTRAINT pk_inventario_area PRIMARY KEY (id_equipamiento, id_area),
     -- fk
@@ -1050,6 +1051,7 @@ COMMENT ON COLUMN public.inventario_area.id_equipamiento IS 'Equipamiento que se
 COMMENT ON COLUMN public.inventario_area.id_area IS 'Area donde se encuentra el equipamiento';
 COMMENT ON COLUMN public.inventario_area.cantidad IS 'Cantidad de equipamiento disponible en el área';
 COMMENT ON COLUMN public.inventario_area.activo IS 'Indica si el registro de inventario está activo o no';
+COMMENT ON COLUMN public.inventario_area.ultima_modificacion IS 'Indica la ultima modificacion del inventario';
 -- ck
 COMMENT ON CONSTRAINT ck_inventario_area_cantidad ON public.inventario_area IS 'Se asegura de que la cantidad sea un valor positivo mayor o igual a cero';
 
@@ -1061,6 +1063,7 @@ CREATE TABLE IF NOT EXISTS public.inventario_recinto (
     id_recinto SMALLINT,
     cantidad SMALLINT NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT True,
+    ultima_modificacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- pk
     CONSTRAINT pk_inventario_recinto PRIMARY KEY (id_equipamiento, id_recinto),
     -- fk
@@ -1077,6 +1080,7 @@ COMMENT ON COLUMN public.inventario_recinto.id_equipamiento IS 'Equipamiento que
 COMMENT ON COLUMN public.inventario_recinto.id_recinto IS 'Recinto donde se encuentra el equipamiento';
 COMMENT ON COLUMN public.inventario_recinto.cantidad IS 'Cantidad de equipamiento disponible en el recinto';
 COMMENT ON COLUMN public.inventario_recinto.activo IS 'Indica si el registro de inventario está activo o no';
+COMMENT ON COLUMN public.inventario_recinto.ultima_modificacion IS 'Indica la ultima modificacion del inventario';
 -- ck
 COMMENT ON CONSTRAINT ck_inventario_recinto_cantidad ON public.inventario_recinto IS 'Se asegura de que la cantidad sea un valor positivo mayor o igual a cero';
 
