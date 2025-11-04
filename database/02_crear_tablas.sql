@@ -540,7 +540,7 @@ COMMENT ON COLUMN public.ponente.apellido_materno IS 'Apellido materno del ponen
 COMMENT ON COLUMN public.ponente.correo IS 'Correo para contacto del ponente';
 COMMENT ON COLUMN public.ponente.id_pais IS 'País de origen del ponente';
 -- ck
-COMMENT ON CONSTRAINT ck_ponentre_correo IS 'Se asegura de que el correo tenga un formato válido';
+COMMENT ON CONSTRAINT ck_ponente_correo ON public.ponente IS 'Se asegura de que el correo tenga un formato válido';
 COMMENT ON CONSTRAINT ck_ponente_nombre_no_vacio ON public.ponente IS 'Se asegura de que el valor del nombre no esté vacío';
 COMMENT ON CONSTRAINT ck_ponente_apellido_paterno_no_vacio ON public.ponente IS 'Se asegura de que el valor del apellido paterno no esté vacío';
 COMMENT ON CONSTRAINT ck_ponente_apellido_materno_no_vacio ON public.ponente IS 'Se asegura de que el valor del apellido materno no esté vacío';
@@ -1035,13 +1035,16 @@ CREATE TABLE IF NOT EXISTS public.inventario_area (
     cantidad SMALLINT NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT True,
     ultima_modificacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    numero_registro INTEGER GENERATED ALWAYS AS IDENTITY, 
     -- pk
     CONSTRAINT pk_inventario_area PRIMARY KEY (id_equipamiento, id_area),
     -- fk
     CONSTRAINT fk_equipamiento FOREIGN KEY (id_equipamiento) REFERENCES public.equipamiento (id_equipamiento) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_area FOREIGN KEY (id_area) REFERENCES public.area (id_area) ON DELETE RESTRICT ON UPDATE CASCADE,
     -- ck
-    CONSTRAINT ck_inventario_area_cantidad CHECK (cantidad >= 0)
+    CONSTRAINT ck_inventario_area_cantidad CHECK (cantidad >= 0),
+    -- uq
+    CONSTRAINT uq_inventario_area_numero_registro UNIQUE (numero_registro)
 );
 -- documentacion
 -- tabla
@@ -1052,8 +1055,11 @@ COMMENT ON COLUMN public.inventario_area.id_area IS 'Area donde se encuentra el 
 COMMENT ON COLUMN public.inventario_area.cantidad IS 'Cantidad de equipamiento disponible en el área';
 COMMENT ON COLUMN public.inventario_area.activo IS 'Indica si el registro de inventario está activo o no';
 COMMENT ON COLUMN public.inventario_area.ultima_modificacion IS 'Indica la ultima modificacion del inventario';
+COMMENT ON COLUMN public.inventario_area.numero_registro IS 'Indica el numero de registro';
 -- ck
 COMMENT ON CONSTRAINT ck_inventario_area_cantidad ON public.inventario_area IS 'Se asegura de que la cantidad sea un valor positivo mayor o igual a cero';
+-- uq
+COMMENT ON CONSTRAINT uq_inventario_area_numero_registro ON public.inventario_area IS 'Se asegura de que solo exista un numero de registro';
 
 ---------------------------------------------------------
 -- inventario_recinto
@@ -1064,13 +1070,16 @@ CREATE TABLE IF NOT EXISTS public.inventario_recinto (
     cantidad SMALLINT NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT True,
     ultima_modificacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    numero_registro INTEGER GENERATED ALWAYS AS IDENTITY,
     -- pk
     CONSTRAINT pk_inventario_recinto PRIMARY KEY (id_equipamiento, id_recinto),
     -- fk
     CONSTRAINT fk_equipamiento FOREIGN KEY (id_equipamiento) REFERENCES public.equipamiento (id_equipamiento) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_recinto FOREIGN KEY (id_recinto) REFERENCES public.recinto (id_recinto) ON DELETE RESTRICT ON UPDATE CASCADE,
     -- ck
-    CONSTRAINT ck_inventario_recinto_cantidad CHECK (cantidad >= 0)
+    CONSTRAINT ck_inventario_recinto_cantidad CHECK (cantidad >= 0),
+    -- uq
+    CONSTRAINT uq_inventario_recinto_numero_registro UNIQUE (numero_registro)
 );
 -- documentacion
 -- tabla
@@ -1081,8 +1090,11 @@ COMMENT ON COLUMN public.inventario_recinto.id_recinto IS 'Recinto donde se encu
 COMMENT ON COLUMN public.inventario_recinto.cantidad IS 'Cantidad de equipamiento disponible en el recinto';
 COMMENT ON COLUMN public.inventario_recinto.activo IS 'Indica si el registro de inventario está activo o no';
 COMMENT ON COLUMN public.inventario_recinto.ultima_modificacion IS 'Indica la ultima modificacion del inventario';
+COMMENT ON COLUMN public.inventario_recinto.numero_registro IS 'Indica el numero de registro';
 -- ck
 COMMENT ON CONSTRAINT ck_inventario_recinto_cantidad ON public.inventario_recinto IS 'Se asegura de que la cantidad sea un valor positivo mayor o igual a cero';
+-- uq
+COMMENT ON CONSTRAINT uq_inventario_recinto_numero_registro ON public.inventario_recinto IS 'Se asegura de que solo exista un numero de registro';
 
 ---------------------------------------------------------
 -- fotografia
