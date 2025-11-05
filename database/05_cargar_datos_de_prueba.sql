@@ -6370,145 +6370,145 @@ VALUES
 INSERT INTO public.fotografia (fotografia, id_recinto)
 VALUES
     -- Auditorio Mtro. Carlos Pérez del Toro
-    ('/recinto/fotografias/auditorio_mtro_carlos_perez_del_toro/auditorio_mtro_carlos_perez_del_toro-01.png',
+    ('/recinto/fotografias/auditorio_mtro_carlos_perez_del_toro-01.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro')),
-    ('/recinto/fotografias/auditorio_mtro_carlos_perez_del_toro/auditorio_mtro_carlos_perez_del_toro-02.png',
+    ('/recinto/fotografias/auditorio_mtro_carlos_perez_del_toro-02.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro')),
-    ('/recinto/fotografias/auditorio_mtro_carlos_perez_del_toro/auditorio_mtro_carlos_perez_del_toro-03.png',
+    ('/recinto/fotografias/auditorio_mtro_carlos_perez_del_toro-03.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro')),
-    ('/recinto/fotografias/auditorio_mtro_carlos_perez_del_toro/auditorio_mtro_carlos_perez_del_toro-04.png',
+    ('/recinto/fotografias/auditorio_mtro_carlos_perez_del_toro-04.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio Mtro. Carlos Pérez del Toro')),
 
     -- Aula Magna de Profesores Eméritos
-    ('/recinto/fotografias/aula_magna_de_profesores_emeritos/aula_magna_de_profesores_emeritos-01.png',
+    ('/recinto/fotografias/aula_magna_de_profesores_emeritos-01.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Aula Magna de Profesores Eméritos')),
-    ('/recinto/fotografias/aula_magna_de_profesores_emeritos/aula_magna_de_profesores_emeritos-02.png',
+    ('/recinto/fotografias/aula_magna_de_profesores_emeritos-02.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Aula Magna de Profesores Eméritos')),
-    ('/recinto/fotografias/aula_magna_de_profesores_emeritos/aula_magna_de_profesores_emeritos-03.png',
+    ('/recinto/fotografias/aula_magna_de_profesores_emeritos-03.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Aula Magna de Profesores Eméritos')),
-    ('/recinto/fotografias/aula_magna_de_profesores_emeritos/aula_magna_de_profesores_emeritos-04.png',
+    ('/recinto/fotografias/aula_magna_de_profesores_emeritos-04.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Aula Magna de Profesores Eméritos')),
 
     -- Auditorio C.P. Tomás López Sánchez
-    ('/recinto/fotografias/auditorio_cp_tomas_lopez_sanchez/auditorio_cp_tomas_lopez_sanchez-01.png',
+    ('/recinto/fotografias/auditorio_cp_tomas_lopez_sanchez-01.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Tomás López Sánchez')),
-    ('/recinto/fotografias/auditorio_cp_tomas_lopez_sanchez/auditorio_cp_tomas_lopez_sanchez-02.png',
+    ('/recinto/fotografias/auditorio_cp_tomas_lopez_sanchez-02.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Tomás López Sánchez')),
-    ('/recinto/fotografias/auditorio_cp_tomas_lopez_sanchez/auditorio_cp_tomas_lopez_sanchez-03.png',
+    ('/recinto/fotografias/auditorio_cp_tomas_lopez_sanchez-03.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Tomás López Sánchez')),
-    ('/recinto/fotografias/auditorio_cp_tomas_lopez_sanchez/auditorio_cp_tomas_lopez_sanchez-04.png',
+    ('/recinto/fotografias/auditorio_cp_tomas_lopez_sanchez-04.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Tomás López Sánchez')),
 
     -- Centro de Informática (CIFCA)
-    ('/recinto/fotografias/centro_de_informatica_cifca/centro_de_informatica_cifca-01.png',
+    ('/recinto/fotografias/centro_de_informatica_cifca-01.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Centro de Informática (CIFCA)')),
-    ('/recinto/fotografias/centro_de_informatica_cifca/centro_de_informatica_cifca-02.png',
+    ('/recinto/fotografias/centro_de_informatica_cifca-02.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Centro de Informática (CIFCA)')),
-    ('/recinto/fotografias/centro_de_informatica_cifca/centro_de_informatica_cifca-03.png',
+    ('/recinto/fotografias/centro_de_informatica_cifca-03.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Centro de Informática (CIFCA)')),
-    ('/recinto/fotografias/centro_de_informatica_cifca/centro_de_informatica_cifca-04.png',
+    ('/recinto/fotografias/centro_de_informatica_cifca-04.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Centro de Informática (CIFCA)')),
 
     -- Auditorio C.P. Alfonso Ochoa Ravizé
-    ('/recinto/fotografias/auditorio_cp_alfonso_ochoa_ravize/auditorio_cp_alfonso_ochoa_ravize-01.png',
+    ('/recinto/fotografias/auditorio_cp_alfonso_ochoa_ravize-01.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé')),
-    ('/recinto/fotografias/auditorio_cp_alfonso_ochoa_ravize/auditorio_cp_alfonso_ochoa_ravize-02.png',
+    ('/recinto/fotografias/auditorio_cp_alfonso_ochoa_ravize-02.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé')),
-    ('/recinto/fotografias/auditorio_cp_alfonso_ochoa_ravize/auditorio_cp_alfonso_ochoa_ravize-03.png',
+    ('/recinto/fotografias/auditorio_cp_alfonso_ochoa_ravize-03.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé')),
-    ('/recinto/fotografias/auditorio_cp_alfonso_ochoa_ravize/auditorio_cp_alfonso_ochoa_ravize-04.png',
+    ('/recinto/fotografias/auditorio_cp_alfonso_ochoa_ravize-04.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Alfonso Ochoa Ravizé')),
 
     -- Centro de Idiomas (CEDI)
-    ('/recinto/fotografias/centro_de_idiomas_cedi/centro_de_idiomas_cedi-01.png',
+    ('/recinto/fotografias/centro_de_idiomas_cedi-01.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Centro de Idiomas (CEDI)')),
-    ('/recinto/fotografias/centro_de_idiomas_cedi/centro_de_idiomas_cedi-02.png',
+    ('/recinto/fotografias/centro_de_idiomas_cedi-02.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Centro de Idiomas (CEDI)')),
-    ('/recinto/fotografias/centro_de_idiomas_cedi/centro_de_idiomas_cedi-03.png',
+    ('/recinto/fotografias/centro_de_idiomas_cedi-03.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Centro de Idiomas (CEDI)')),
-    ('/recinto/fotografias/centro_de_idiomas_cedi/centro_de_idiomas_cedi-04.png',
+    ('/recinto/fotografias/centro_de_idiomas_cedi-04.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Centro de Idiomas (CEDI)')),
 
     -- Aula Magna de Investigación
-    ('/recinto/fotografias/aula_magna_de_investigacion/aula_magna_de_investigacion-01.png',
+    ('/recinto/fotografias/aula_magna_de_investigacion-01.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Aula Magna de Investigación')),
-    ('/recinto/fotografias/aula_magna_de_investigacion/aula_magna_de_investigacion-02.png',
+    ('/recinto/fotografias/aula_magna_de_investigacion-02.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Aula Magna de Investigación')),
-    ('/recinto/fotografias/aula_magna_de_investigacion/aula_magna_de_investigacion-03.png',
+    ('/recinto/fotografias/aula_magna_de_investigacion-03.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Aula Magna de Investigación')),
-    ('/recinto/fotografias/aula_magna_de_investigacion/aula_magna_de_investigacion-04.png',
+    ('/recinto/fotografias/aula_magna_de_investigacion-04.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Aula Magna de Investigación')),
 
     -- Auditorio C.P. Arturo Elizundia Charles
-    ('/recinto/fotografias/auditorio_cp_arturo_elizundia_charles/auditorio_cp_arturo_elizundia_charles-01.png',
+    ('/recinto/fotografias/auditorio_cp_arturo_elizundia_charles-01.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Arturo Elizundia Charles')),
-    ('/recinto/fotografias/auditorio_cp_arturo_elizundia_charles/auditorio_cp_arturo_elizundia_charles-02.png',
+    ('/recinto/fotografias/auditorio_cp_arturo_elizundia_charles-02.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Arturo Elizundia Charles')),
-    ('/recinto/fotografias/auditorio_cp_arturo_elizundia_charles/auditorio_cp_arturo_elizundia_charles-03.png',
+    ('/recinto/fotografias/auditorio_cp_arturo_elizundia_charles-03.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Arturo Elizundia Charles')),
-    ('/recinto/fotografias/auditorio_cp_arturo_elizundia_charles/auditorio_cp_arturo_elizundia_charles-04.png',
+    ('/recinto/fotografias/auditorio_cp_arturo_elizundia_charles-04.png',
         (SELECT id_recinto 
             FROM recinto 
             WHERE nombre='Auditorio C.P. Arturo Elizundia Charles'));
