@@ -883,123 +883,123 @@ INSERT INTO public.puesto (nombre,unico, id_area, id_jefe) VALUES
 ---------------------------------------------------------
 -- usuario
 ---------------------------------------------------------
-INSERT INTO public.usuario (foto_usuario, nombre_usuario, rfc, nombre, apellido_paterno, apellido_materno, telefono, celular, correo, id_rol_usuario, id_puesto)
+INSERT INTO public.usuario (nombre_usuario, rfc, nombre, apellido_paterno, apellido_materno, telefono, celular, correo, id_rol_usuario, id_puesto)
 VALUES
     -- superadministrador
-    ('/usuarios/fotos/alonso_cedeno_prieto.png','acedeno','CEPA800126B6C','Alonso','Cedeno','Prieto','5511000026','5588000026','acedeno@fca.unam.mx',
+    ('acedeno','CEPA800126B6C','Alonso','Cedeno','Prieto','5511000026','5588000026','acedeno@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='superadministrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario General')),
 
     -- administrador
-    ('/usuarios/fotos/alejandro_torres_lopez.png','atorres','TOLA800101A1B','Alejandro','Torres','Lopez','5511000001','5588000001','atorres@fca.unam.mx',
+    ('atorres','TOLA800101A1B','Alejandro','Torres','Lopez','5511000001','5588000001','atorres@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Jefe de División de Educación Continua')),
 
-    ('/usuarios/fotos/beatriz_morales_diaz.png','bmorales','MODB800102B2C','Beatriz','Morales','Diaz','5511000002','5588000002','bmorales@fca.unam.mx',
+    ('bmorales','MODB800102B2C','Beatriz','Morales','Diaz','5511000002','5588000002','bmorales@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Jefe de División de Estudios de Posgrado')),
 
-    ('/usuarios/fotos/carlos_rojas_perez.png','crojas','ROPC800103C3D','Carlos','Rojas','Perez','5511000003','5588000003','crojas@fca.unam.mx',
+    ('crojas','ROPC800103C3D','Carlos','Rojas','Perez','5511000003','5588000003','crojas@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Jefe de División de Investigación')),
 
-    ('/usuarios/fotos/jorge_herrera_martin.png','jherrera','HEMA800110K0L','Jorge','Herrera','Martin','5511000010','5588000010','jherrera@fca.unam.mx',
+    ('jherrera','HEMA800110K0L','Jorge','Herrera','Martin','5511000010','5588000010','jherrera@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario Académico')),
 
-    ('/usuarios/fotos/karla_dominguez_pineda.png','kdominguez','DOPK800111L1M','Karla','Dominguez','Pineda','5511000011','5588000011','kdominguez@fca.unam.mx',
+    ('kdominguez','DOPK800111L1M','Karla','Dominguez','Pineda','5511000011','5588000011','kdominguez@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Planeación Académica')),
 
-    ('/usuarios/fotos/luis_alberto_gomez_rivera.png','lgomez','GRLA800112M2N','Luis Alberto','Gomez','Rivera','5511000012','5588000012','lgomez@fca.unam.mx',
+    ('lgomez','GRLA800112M2N','Luis Alberto','Gomez','Rivera','5511000012','5588000012','lgomez@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Planeación y Evaluación Académica')),
 
-    ('/usuarios/fotos/mariana_ortega_luna.png','mortega','ORLM800113N3P','Mariana','Ortega','Luna','5511000013','5588000013','mortega@fca.unam.mx',
+    ('mortega','ORLM800113N3P','Mariana','Ortega','Luna','5511000013','5588000013','mortega@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Difusión Cultural')),
 
-    ('/usuarios/fotos/nicolas_pacheco_salas.png','npacheco','PASN800114P4Q','Nicolas','Pacheco','Salas','5511000014','5588000014','npacheco@fca.unam.mx',
+    ('npacheco','PASN800114P4Q','Nicolas','Pacheco','Salas','5511000014','5588000014','npacheco@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Vinculación')),
 
-    ('/usuarios/fotos/olivia_quintana_rosales.png','oquintana','QURO800115Q5R','Olivia','Quintana','Rosales','5511000015','5588000015','oquintana@fca.unam.mx',
+    ('oquintana','QURO800115Q5R','Olivia','Quintana','Rosales','5511000015','5588000015','oquintana@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Relaciones y Extensión Universitaria')),
 
-    ('/usuarios/fotos/pablo_reyes_aguilar.png','preyes','REAP800116R6S','Pablo','Reyes','Aguilar','5511000016','5588000016','preyes@fca.unam.mx',
+    ('preyes','REAP800116R6S','Pablo','Reyes','Aguilar','5511000016','5588000016','preyes@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Cooperación Internacional')),
 
-    ('/usuarios/fotos/raul_serrano_ibanez.png','rserrano','SEIR800117S7T','Raul','Serrano','Ibanez','5511000017','5588000017','rserrano@fca.unam.mx',
+    ('rserrano','SEIR800117S7T','Raul','Serrano','Ibanez','5511000017','5588000017','rserrano@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Cooperación Internacional ALFECA')),
 
-    ('/usuarios/fotos/silvia_trevino_campos.png','strevino','TRCS800118T8U','Silvia','Trevino','Campos','5511000018','5588000018','strevino@fca.unam.mx',
+    ('strevino','TRCS800118T8U','Silvia','Trevino','Campos','5511000018','5588000018','strevino@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Cooperación Internacional y Enlace ALAFEC')),
 
-    ('/usuarios/fotos/tomas_ugalde_neri.png','tugalde','UGNT800119U9V','Tomas','Ugalde','Neri','5511000019','5588000019','tugalde@fca.unam.mx',
+    ('tugalde','UGNT800119U9V','Tomas','Ugalde','Neri','5511000019','5588000019','tugalde@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Intercambio Académico y ANFECA')),
 
-    ('/usuarios/fotos/ursula_valdez_ibarra.png','uvaldez','VAIU800120V0W','Ursula','Valdez','Ibarra','5511000020','5588000020','uvaldez@fca.unam.mx',
+    ('uvaldez','VAIU800120V0W','Ursula','Valdez','Ibarra','5511000020','5588000020','uvaldez@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Secretario de Divulgación y Fomento Editorial')),
 
-    ('/usuarios/fotos/ximena_zarate_ochoa.png','xzarate','ZAOX800123Y3Z','Ximena','Zarate','Ochoa','5511000023','5588000023','xzarate@fca.unam.mx',
+    ('xzarate','ZAOX800123Y3Z','Ximena','Zarate','Ochoa','5511000023','5588000023','xzarate@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='administrador'),
         (SELECT id_puesto FROM puesto WHERE nombre='Jefe de Departamento de Servicios Generales y Mantenimiento')),
 
     -- funcionario
-    ('/usuarios/fotos/daniela_vega_hernandez.png','dvega','VEHD800104D4E','Daniela','Vega','Hernandez','5511000004','5588000004','dvega@fca.unam.mx',
+    ('dvega','VEHD800104D4E','Daniela','Vega','Hernandez','5511000004','5588000004','dvega@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Coordinador de Asuntos Internacionales')),
 
-    ('/usuarios/fotos/eduardo_sanchez_castro.png','esanchez','SACE800105E5F','Eduardo','Sanchez','Castro','5511000005','5588000005','esanchez@fca.unam.mx',
+    ('esanchez','SACE800105E5F','Eduardo','Sanchez','Castro','5511000005','5588000005','esanchez@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Coordinador de Mercadotecnia')),
 
-    ('/usuarios/fotos/fernanda_lopez_garcia.png','flopez','LOGF800106F6G','Fernanda','Lopez','Garcia','5511000006','5588000006','flopez@fca.unam.mx',
+    ('flopez','LOGF800106F6G','Fernanda','Lopez','Garcia','5511000006','5588000006','flopez@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Coordinador de Recursos Humanos')),
 
-    ('/usuarios/fotos/gabriela_navarro_ortiz.png','gnavarro','NAOG800107G7H','Gabriela','Navarro','Ortiz','5511000007','5588000007','gnavarro@fca.unam.mx',
+    ('gnavarro','NAOG800107G7H','Gabriela','Navarro','Ortiz','5511000007','5588000007','gnavarro@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Coordinador del Programa de Posgrado en Ciencias de la Administración')),
 
-    ('/usuarios/fotos/hector_ramirez_solis.png','hramirez','RASH800108H8J','Hector','Ramirez','Solis','5511000008','5588000008','hramirez@fca.unam.mx',
+    ('hramirez','RASH800108H8J','Hector','Ramirez','Solis','5511000008','5588000008','hramirez@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Jefe de Carrera de la Licenciatura en Administración')),
 
-    ('/usuarios/fotos/ivanna_castillo_mendez.png','icastillo','CAMI800109J9K','Ivanna','Castillo','Mendez','5511000009','5588000009','icastillo@fca.unam.mx',
+    ('icastillo','CAMI800109J9K','Ivanna','Castillo','Mendez','5511000009','5588000009','icastillo@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Jefe de Carrera de la Licenciatura en Negocios Internacionales')),
 
-    ('/usuarios/fotos/victor_ximenez_lara.png','vximenez','XILV800121W1X','Victor','Ximenez','Lara','5511000021','5588000021','vximenez@fca.unam.mx',
+    ('vximenez','XILV800121W1X','Victor','Ximenez','Lara','5511000021','5588000021','vximenez@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Encargado de Actos')),
 
-    ('/usuarios/fotos/wendy_yanez_cabrera.png','wyanez','YACW800122X2Y','Wendy','Yanez','Cabrera','5511000022','5588000022','wyanez@fca.unam.mx',
+    ('wyanez','YACW800122X2Y','Wendy','Yanez','Cabrera','5511000022','5588000022','wyanez@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Coordinador de Emprendedores')),
 
-    ('/usuarios/fotos/yair_acosta_molina.png','yacosta','ACMY800124Z4A','Yair','Acosta','Molina','5511000024','5588000024','yacosta@fca.unam.mx',
+    ('yacosta','ACMY800124Z4A','Yair','Acosta','Molina','5511000024','5588000024','yacosta@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Coordinador del CEDIGEC')),
 
-    ('/usuarios/fotos/zoe_bautista_nunez.png','zbautista','BUNZ800125A5B','Zoe','Bautista','Nunez','5511000025','5588000025','zbautista@fca.unam.mx',
+    ('zbautista','BUNZ800125A5B','Zoe','Bautista','Nunez','5511000025','5588000025','zbautista@fca.unam.mx',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre='funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre='Coordinador de Informática')),
 
     --      chicos del servicio social
-    ('/usuarios/fotos/ana_garcia_lopez.png','ana_garcia_lopez',NULL,'Ana','García','López','5512345678','5523456789','ana.garcia.lopez@gmail.com',
+    ('ana_garcia_lopez',NULL,'Ana','García','López','5512345678','5523456789','ana.garcia.lopez@gmail.com',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre = 'funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre = 'Servicio Social Difusión Cultural')),
-    ('/usuarios/fotos/carlos_perez_mendoza.png','carlos_perez_mendoza',NULL,'Carlos','Pérez','Mendoza','5587654321','5598765432','carlos.perez.mendoza@gmail.com',
+    ('carlos_perez_mendoza',NULL,'Carlos','Pérez','Mendoza','5587654321','5598765432','carlos.perez.mendoza@gmail.com',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre = 'funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre = 'Servicio Social Difusión Cultural')),
-    ('/usuarios/fotos/lucia_martinez_ramirez.png','lucia_martinez_ramirez',NULL,'Lucía','Martínez','Ramírez','5576543210','5565432109','lucia.martinez.ramirez@gmail.com',
+    ('lucia_martinez_ramirez',NULL,'Lucía','Martínez','Ramírez','5576543210','5565432109','lucia.martinez.ramirez@gmail.com',
         (SELECT id_rol_usuario FROM rol_usuario WHERE nombre = 'funcionario'),
         (SELECT id_puesto FROM puesto WHERE nombre = 'Servicio Social Difusión Cultural'));
 
