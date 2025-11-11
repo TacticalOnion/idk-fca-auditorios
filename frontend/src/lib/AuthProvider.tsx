@@ -13,15 +13,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, [isAuthenticated])
 
   async function login(username: string, password: string) {
-    const body = new URLSearchParams()
-    body.append('username', username)
-    body.append('password', password)
+    // JSON con los nombres que espera el backend
+    const body = {
+      username,
+      password,
+    }
 
-    const { data } = await api.post('/api/auth/login', body.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    })
+    const { data } = await api.post('/api/auth/login', body) // application/json por defecto
 
-    // backend: { token_type: "Bearer", access_token: "..." }
     setToken(data.access_token) // "Bearer " se agrega en api.ts
     await refreshMe()
   }

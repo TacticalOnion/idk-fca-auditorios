@@ -33,6 +33,7 @@ public class Sha256PasswordEncoder implements PasswordEncoder {
     }
   }
 
+  /** Elimina espacios ASCII y no-ASCII al inicio/fin (NBSP, etc.). */
   private String stripUnicodeWhitespace(String s) {
     int i = 0, j = s.length();
     while (i < j && Character.isWhitespace(s.charAt(i))) i++;

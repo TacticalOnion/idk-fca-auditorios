@@ -45,4 +45,26 @@ public class AuthController {
     String token = jwt.generate(u.getNombreUsuario(), Map.of("role", u.getRolNombre()));
     return ResponseEntity.ok(Map.of("access_token", token, "token_type","Bearer"));
   }
+
+  /*TODO borrar*/
+  @PostMapping("/login")
+  public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
+    var opt = repo.findUserForLogin(username);
+    if (opt.isEmpty()) return ResponseEntity.status(401).body(Map.of("message","Credenciales inválidas"));
+
+    var u = opt.get();
+    System.out.println("[LOGIN] user=" + u.getNombreUsuario()
+        + " activo=" + u.isActivo()
+        + " stored.len=" + (u.getContrasenia()==null?-1:u.getContrasenia().length())
+        + " stored.hash=" + u.getContrasenia());
+    System.out.println("[LOGIN] calc.hash=" + encoder.encode(password));
+
+    if (!u.isActivo()) return ResponseEntity.status(403).body(Map.of("message","Usuario inactivo"));
+    if (!encoder.matches(password, u.getContrasenia()))
+      return ResponseEntity.status(401).body(Map.of("message","Credenciales inválidas"));
+
+    String token = jwt.generate(u.getNombreUsuario(), Map.of("role", u.getRolNombre()));
+    return ResponseEntity.ok(Map.of("access_token", token, "token_type","Bearer"));
+  }
+
 }
