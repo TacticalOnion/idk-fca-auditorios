@@ -1,9 +1,3 @@
--- Limpiar esquema public y crear de nuevo
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
-
-SET client_encoding to 'UTF8';
-BEGIN;
 ---------------------------------------------------------
 -- TABLAS PADRE
 ---------------------------------------------------------
@@ -442,7 +436,7 @@ CREATE TABLE IF NOT EXISTS public.usuario (
     nombre VARCHAR(50) NOT NULL,
     apellido_paterno VARCHAR(50) NOT NULL,
     apellido_materno VARCHAR(50) NOT NULL,
-    contrasenia CHAR(64) NOT NULL DEFAULT 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
+    contrasenia VARCHAR(64) NOT NULL DEFAULT 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
     telefono CHAR(10) NOT NULL,
     celular CHAR(10) NOT NULL,
     correo VARCHAR(100) NOT NULL,

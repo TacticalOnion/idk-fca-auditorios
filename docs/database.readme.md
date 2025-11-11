@@ -33,9 +33,9 @@ psql -U postgres -f 00_borrar_base_de_datos.sql
 psql -U postgres -d fca_auditorios -f 00_resetear_tablas.sql
 ```
 
-## Exportar datos
+## Limpiar esquema
 ```psql
-psql -U postgres -d fca_auditorios -f 00_exportar_datos.sql
+psql -U postgres -d fca_auditorios -f 00_limpiar_esquema.sql
 ```
 
 ## Listar triggers

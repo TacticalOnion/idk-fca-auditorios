@@ -18,21 +18,6 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
-    },
-  },
-  js.configs.recommended,
-  {
-    files: ["src/components/ui/**/*.{ts,tsx}"],
-    rules: {
-      "react-refresh/only-export-components": "off",
-    },
-  },
-  {
-    rules: {
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
-    },
+    }
   },
 ])

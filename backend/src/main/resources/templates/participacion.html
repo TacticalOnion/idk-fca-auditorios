@@ -1,5 +1,0 @@
-<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Participación</title></head><body>
-<h1>Participación</h1>
-<table border="1"><thead><tr><th>Evento</th><th>Integrante</th><th>Rol</th><th>Núm. Registro</th></tr></thead>
-<tbody><tr th:each="it : ${items}"><td th:text="${it.evento}"></td><td th:text="${it.integrante}"></td><td th:text="${it.rolParticipacion}"></td><td th:text="${it.numeroRegistro}"></td></tr></tbody>
-</table></body></html>

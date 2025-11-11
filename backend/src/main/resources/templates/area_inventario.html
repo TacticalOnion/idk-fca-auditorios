@@ -1,5 +1,0 @@
-<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Inventario por Área</title></head><body>
-<h1>Inventario por Área</h1>
-<table border="1"><thead><tr><th>Área</th><th>Equipamiento</th><th>Cantidad</th><th>Núm. Registro</th></tr></thead>
-<tbody><tr th:each="it : ${items}"><td th:text="${it.area}"></td><td th:text="${it.equipamiento}"></td><td th:text="${it.cantidad}"></td><td th:text="${it.numeroRegistro}"></td></tr></tbody>
-</table></body></html>

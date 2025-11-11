@@ -1,96 +1,49 @@
-// src/App.tsx
-import { useMemo, useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { KanbanBoard } from '@/components/kanban/KanbanBoard'
-import { EventsTableView } from '@/components/table/EventsTableView'
-import { EventsCalendar } from '@/components/calendar/EventsCalendar'
-import { useEvents } from '@/hooks/useEvents'
-import { EventSheet } from '@/components/events/EventSheet'
-import type { EventItem, Status } from '@/types/event'
-import { isUpcoming } from '@/utils/date' // <-- NUEVO
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { useAuth } from '@/lib/useAuth'
+import AuthProvider from '@/lib/AuthProvider'
+import LoginPage from './pages/auth/Login'
+import Layout from './pages/_layout/Layout'
+import MePage from './pages/profile/Me'
+import AuditoriaPage from './pages/auditoria/AuditoriaPage'
+import CalendarioPage from './pages/calendario/CalendarioPage'
+import EventosPage from './pages/eventos/EventosPage'
+import InventarioGeneral from './pages/inventario/InventarioGeneral'
+import InventarioArea from './pages/inventario/InventarioArea'
+import InventarioRecinto from './pages/inventario/InventarioRecinto'
+import RecintosGallery from './pages/recintos/RecintosGallery'
+import PonentesPage from './pages/ponentes/PonentesPage'
+import UsuariosPage from './pages/usuarios/UsuariosPage'
+import FuncionariosPage from './pages/funcionarios/FuncionariosPage'
+
+function Private({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth()
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
 
 export default function App() {
-  const { events, setEvents } = useEvents()
-  const [active, setActive] = useState<'kanban' | 'tabla' | 'calendario'>('kanban')
-  const [selected, setSelected] = useState<EventItem | null>(null)
-
-  const visible = useMemo(
-    () => events.filter((e: EventItem) => isUpcoming(e.startDate)), 
-    [events]
-  )
-
-  const byStatus = useMemo(() => ({
-    pendiente: visible.filter((e: EventItem) => e.status === 'Pendiente'),
-    autorizado: visible.filter((e: EventItem) => e.status === 'Autorizado'),
-    cancelado: visible.filter((e: EventItem) => e.status === 'Cancelado'),
-  }), [visible])
-
   return (
-    <div className="min-h-screen p-4 md:p-6">
-      <header className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl md:text-3xl font-semibold">Dashboard de Eventos</h1>
-      </header>
-
-      <Tabs value={active} onValueChange={(value: string) => setActive(value as 'kanban' | 'tabla' | 'calendario')}>
-        <TabsList className="grid grid-cols-3 w-full sm:w-auto">
-          <TabsTrigger value="kanban">Kanban</TabsTrigger>
-          <TabsTrigger value="tabla">Registros</TabsTrigger>
-          <TabsTrigger value="calendario">Calendario</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="kanban" className="mt-4">
-          <KanbanBoard
-            data={byStatus}
-            onOpen={setSelected}
-            onStatusChange={(id: string, status: Status, opts?: { cancelReason?: string; clearCancelReason?: boolean }) => {
-              setEvents((prev: EventItem[]) =>
-                prev.map((e: EventItem) => {
-                  if (e.id !== id) return e
-                  // Setea estado normal
-                  const next: EventItem = { ...e, status }
-                  // Si viene cancelReason explícito (al cancelar), lo guardamos
-                  if (typeof opts?.cancelReason !== 'undefined') {
-                    next.cancelReason = opts.cancelReason
-                  }
-                  // Si hay que limpiar motivo (al "deshacer")
-                  if (opts?.clearCancelReason) {
-                    // lo dejamos como undefined para que sea NULL al serializar o guardado
-                    delete next.cancelReason
-                  }
-                  return next
-                })
-              )
-            }}
-          />
-        </TabsContent>
-
-        <TabsContent value="tabla" className="mt-4">
-          <EventsTableView
-            events={events}
-            onOpen={setSelected}
-            onBulkStatus={(ids: string[], status: Status) => {
-              setEvents((prev: EventItem[]) =>
-                prev.map((e: EventItem) => (ids.includes(e.id) ? { ...e, status } : e))
-              )
-            }}
-          />
-        </TabsContent>
-
-        <TabsContent value="calendario" className="mt-4">
-          <EventsCalendar events={events} onOpen={setSelected} />
-        </TabsContent>
-      </Tabs>
-
-      <EventSheet
-        event={selected}
-        onClose={() => setSelected(null)}
-        onStatusChange={(status: Status) => {
-          if (!selected) return
-          setEvents((prev: EventItem[]) =>
-            prev.map((e: EventItem) => (e.id === selected.id ? { ...e, status } : e))
-          )
-        }}
-      />
-    </div>
+    <AuthProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/"
+          element={<Private><Layout /></Private>}
+        >
+          <Route index element={<Navigate to="/eventos" replace/>} />
+          <Route path="me" element={<MePage/>} />
+          <Route path="auditoria" element={<AuditoriaPage/>} />
+          <Route path="calendario" element={<CalendarioPage/>} />
+          <Route path="eventos" element={<EventosPage/>} />
+          <Route path="inventario/general" element={<InventarioGeneral/>} />
+          <Route path="inventario/area" element={<InventarioArea/>} />
+          <Route path="inventario/recinto" element={<InventarioRecinto/>} />
+          <Route path="recintos" element={<RecintosGallery/>} />
+          <Route path="ponentes" element={<PonentesPage/>} />
+          <Route path="usuarios" element={<UsuariosPage/>} />
+          <Route path="funcionarios" element={<FuncionariosPage/>} />
+        </Route>
+      </Routes>
+    </AuthProvider>
   )
 }

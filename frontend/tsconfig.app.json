@@ -23,9 +23,15 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@ui/*": [
+        "./src/components/ui/*"
+      ]
     }
   },
   "include": ["src"]

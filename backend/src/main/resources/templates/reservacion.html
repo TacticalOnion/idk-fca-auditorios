@@ -1,5 +1,0 @@
-<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Reservaciones</title></head><body>
-<h1>Reservaciones</h1>
-<table border="1"><thead><tr><th>Evento</th><th>Recinto</th><th>Fecha Solicitud</th><th>Estatus</th><th>Núm. Registro</th></tr></thead>
-<tbody><tr th:each="it : ${items}"><td th:text="${it.evento}"></td><td th:text="${it.recinto}"></td><td th:text="${it.fechaSolicitud}"></td><td th:text="${it.estatus}"></td><td th:text="${it.numeroRegistro}"></td></tr></tbody>
-</table></body></html>
