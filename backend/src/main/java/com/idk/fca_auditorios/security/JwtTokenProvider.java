@@ -1,11 +1,14 @@
 package com.idk.fca_auditorios.security;
 
-import com.idk.fca_auditorios.config.AppProperties;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
@@ -13,31 +16,62 @@ import java.util.Map;
 
 @Component
 public class JwtTokenProvider {
-  private final AppProperties props;
-  private final Key key;
 
-  public JwtTokenProvider(AppProperties props) {
-    this.props = props;
-    String secret = props.getSecret();
-    // Opción "crudo":
-    this.key = Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-  }
+    private final Key key;
+    private final long jwtExpirationMillis;
+    private final String issuer;
 
-  public String generate(String subject, Map<String, Object> claims) {
-    Instant now = Instant.now();
-    Instant exp = now.plusSeconds(props.getExpirationMinutes() * 60L);
-    return Jwts.builder()
-        .setSubject(subject)
-        .addClaims(claims)
-        .setIssuer(props.getIssuer())
-        .setIssuedAt(Date.from(now))
-        .setExpiration(Date.from(exp))
-        .signWith(key, SignatureAlgorithm.HS256)
-        .compact();
-  }
+    public JwtTokenProvider(
+            @Value("${app.jwt.secret}") String secret,
+            @Value("${app.jwt.expiration:86400000}") long jwtExpirationMillis, // 24h por defecto
+            @Value("${app.jwt.issuer:IDK-FCA}") String issuer
+    ) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.jwtExpirationMillis = jwtExpirationMillis;
+        this.issuer = issuer;
+    }
 
-  public String getSubject(String token) {
-    return Jwts.parserBuilder().setSigningKey(key).build()
-        .parseClaimsJws(token).getBody().getSubject();
-  }
+    /** Mantiene compatibilidad con AuthController: generate(subject, claims) */
+    public String generate(String subject, Map<String, Object> claims) {
+        Instant now = Instant.now();
+        Date iat = Date.from(now);
+        Date exp = new Date(iat.getTime() + jwtExpirationMillis);
+
+        return Jwts.builder()
+                .setSubject(subject)
+                .setIssuer(issuer)
+                .setIssuedAt(iat)
+                .setExpiration(exp)
+                .addClaims(claims == null ? Map.of() : claims)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /** Útil si en algún punto generas sin claims */
+    public String generate(String subject) {
+        return generate(subject, Map.of());
+    }
+
+    public boolean validate(String token) {
+        try {
+            parseAllClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException ex) {
+            // log opcional
+            return false;
+        }
+    }
+
+    public String getSubject(String token) {
+        return parseAllClaims(token).getSubject();
+    }
+
+    public Claims parseAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .requireIssuer(issuer)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
 }

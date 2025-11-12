@@ -32,28 +32,50 @@ public class EventoController {
   }
 
   @GetMapping
-  public List<Evento> list() { return repo.findAll(); }
+  public List<Map<String, Object>> list() {
+    String sql = """
+        SELECT
+          e.id_evento       AS id,
+          e.nombre          AS nombre,
+          e.descripcion     AS descripcion,
+          e.estatus         AS estatus,
+          e.fecha_inicio    AS fechaInicio,
+          e.fecha_fin       AS fechaFin,
+          e.horario_inicio  AS horarioInicio,
+          e.horario_fin     AS horarioFin,
+          e.presencial      AS presencial,
+          e.online          AS online,
+          e.fecha_registro  AS fechaRegistro,
+          r.numero_registro AS numeroRegistro
+        FROM evento e
+        LEFT JOIN reservacion r
+          ON r.id_evento = e.id_evento
+        ORDER BY e.fecha_inicio DESC, e.horario_inicio
+        """;
+
+    return jdbc.queryForList(sql);
+  }
 
   @GetMapping("/{id}/verificar-equipamiento")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public List<java.util.Map<String,Object>> verificar(@PathVariable Long id) {
     return service.verificarEquipamiento(id);
   }
 
   @PostMapping("/{id}/autorizar")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Evento autorizar(@PathVariable Long id) {
     return service.autorizar(id);
   }
 
   @PostMapping("/{id}/cancelar")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Evento cancelar(@PathVariable Long id, @RequestParam String motivo) {
     return service.cancelar(id, motivo);
   }
 
   @PostMapping("/{id}/deshacer")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Evento deshacer(@PathVariable Long id) {
     return service.deshacer(id);
   }
@@ -69,7 +91,7 @@ public class EventoController {
   }
 
   @PostMapping("/{id}/descargar-reconocimientos")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public ResponseEntity<Resource> descargarReconocimientos(@PathVariable Long id) throws Exception {
     List<Long> ponentes = repoPonentesDelEvento(id);
     if (ponentes.isEmpty()) {
@@ -88,7 +110,7 @@ public class EventoController {
   }
 
   @PostMapping("")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Evento crear(@Valid @RequestBody EventoCreateRequest body) {
     Evento e = new Evento();
     e.setNombre(body.nombre());
@@ -104,7 +126,7 @@ public class EventoController {
   }
 
   @GetMapping("/{id}/detalle")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Map<String,Object> detalle(@PathVariable Long id) {
     Map<String,Object> evento = jdbc.queryForMap("""
       SELECT e.id_evento as id, e.nombre, e.descripcion, e.estatus, e.motivo,

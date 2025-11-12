@@ -37,14 +37,14 @@ public class RecintoController {
   }
 
   @PostMapping
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Map<String,Object> crear(@RequestBody Recinto body) {
     Recinto r = repo.save(body);
     return Map.of("id", r.getId());
   }
 
   @PostMapping(value="/{id}/fotos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Map<String,Object> subirFotos(@PathVariable Long id,
                                        @RequestParam("files") List<MultipartFile> files,
                                        @RequestParam(name="portadaIndex", required=false) Integer portadaIndex) throws Exception {
@@ -63,7 +63,7 @@ public class RecintoController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Map<String,Object> editar(@PathVariable Long id, @RequestBody Map<String,Object> body) {
     Recinto r = repo.findById(id).orElseThrow();
     if (body.containsKey("nombre")) r.setNombre(String.valueOf(body.get("nombre")));
@@ -76,7 +76,7 @@ public class RecintoController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Map<String,Object> eliminar(@PathVariable Long id) {
     Recinto r = repo.findById(id).orElseThrow();
     r.setActivo(false); // baja lógica

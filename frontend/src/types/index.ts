@@ -10,7 +10,7 @@ export type Evento = {
   horarioFin?: string
   presencial?: boolean
   online?: boolean
-  numeroRegistro?: string
+  numeroRegistro?: number | null
   megaEvento?: boolean
   idMegaEvento?: number
   idCategoria?: number

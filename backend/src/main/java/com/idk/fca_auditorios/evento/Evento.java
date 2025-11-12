@@ -27,7 +27,6 @@ public class Evento {
   private String descripcion;
   private String motivo;
 
-  @Column(name="numero_registro") private String numeroRegistro;
   @Column(name="mega_evento") private Boolean megaEvento;
   @Column(name="id_mega_evento") private Long idMegaEvento;
   @Column(name="id_categoria") private Long idCategoria;

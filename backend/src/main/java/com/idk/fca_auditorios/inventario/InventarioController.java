@@ -73,7 +73,7 @@ public class InventarioController {
 
   /** Alta simple de equipamiento + al menos un registro en inventario (área o recinto). */
   @PostMapping("/equipamiento")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Map<String,Object> crearEquipamiento(@RequestBody Map<String,Object> body) {
     String nombre = String.valueOf(body.get("nombre"));
     Boolean existencia = (body.get("existencia") == null)

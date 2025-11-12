@@ -73,7 +73,7 @@ public class PonenteController {
   }
 
   @PostMapping("/{id}/generar-semblanza")
-  @PreAuthorize("hasRole('administrador')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Map<String, Object> generarSemblanza(@PathVariable Long id,
                                               @RequestParam @NotBlank String nombreArchivoPdf) throws Exception {
     Path pdfPath = pdf.generarSemblanza(id, nombreArchivoPdf);
@@ -87,7 +87,7 @@ public class PonenteController {
   }
 
   @PostMapping("/descargar-semblanzas")
-    @PreAuthorize("hasRole('administrador')")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Resource> descargarSemblanzas(@RequestBody Map<String,Object> body) throws Exception {
         List<?> idsRaw = (List<?>) body.getOrDefault("ids", List.of());
     List<Integer> ids = new java.util.ArrayList<>();

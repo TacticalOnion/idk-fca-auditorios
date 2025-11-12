@@ -5,10 +5,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -40,17 +40,16 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
     http
       .csrf(csrf -> csrf.disable())
-      .cors(cors -> cors.configurationSource(corsConfigurationSource())) // << habilita CORS
+      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+      .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // << RECOMENDADO
       .authorizeHttpRequests(auth -> auth
-        // permite preflight CORS
-        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-        // login y docs públicos
-        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
-        .requestMatchers(HttpMethod.GET, "/health").permitAll()
-        .anyRequest().authenticated()
+          .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+          .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+          .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+          .requestMatchers(HttpMethod.GET, "/health").permitAll()
+          .anyRequest().authenticated()
       )
-      .httpBasic(Customizer.withDefaults());
+      .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
     // Asegúrate de que el filtro JWT no bloquee preflight/login
     http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
