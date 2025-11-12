@@ -54,18 +54,17 @@ function Topbar() {
 
   return (
     <header className="h-14 border-b bg-white flex items-center justify-between px-4">
-      <div className="flex items-center gap-3">
-        {/* Logo */}
+      {/* Logo + título como link */}
+      <NavLink to="/" className="flex items-center gap-3 hover:opacity-90">
         <img
           src="/idk-logo.svg"
           alt="IDK Logo"
           className="h-8 w-auto"
         />
-
         <span className="font-semibold">
-          FCA Auditorios
+          IDK FCA Auditorios
         </span>
-      </div>
+      </NavLink>
 
       <div className="flex items-center gap-3">
         <span className="text-sm text-gray-600">
