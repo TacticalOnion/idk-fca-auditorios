@@ -45,3 +45,5 @@ export {
 } from "@/components/ui/select"
 
 export { Badge } from "@/components/ui/badge"
+
+export { Separator } from "@/components/ui/separator"
