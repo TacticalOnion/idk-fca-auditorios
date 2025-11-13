@@ -259,7 +259,7 @@ export default function KanbanView({ data }: KanbanViewProps) {
                 <Card key={evento.id} className="border border-slate-200">
                   <CardHeader className="space-y-1 pb-2">
                     <CardTitle className="flex flex-wrap gap-1 text-sm font-semibold">
-                      {evento.nombre} 
+                      {evento.id}. {evento.nombre} 
                       {evento.categoria && (
                         <Badge variant="outline">{evento.categoria}</Badge>
                       )}
@@ -288,12 +288,6 @@ export default function KanbanView({ data }: KanbanViewProps) {
                       {formatTime(evento.horarioInicio)} –{' '}
                       {formatTime(evento.horarioFin)}
                     </div>
-                    {evento.calendarioEscolar && (
-                      <div>
-                        <span className="font-medium">Calendario:&nbsp;</span>
-                        {evento.calendarioEscolar}
-                      </div>
-                    )}
                   </CardContent>
 
                   <CardFooter className="flex gap-2 pt-2">
