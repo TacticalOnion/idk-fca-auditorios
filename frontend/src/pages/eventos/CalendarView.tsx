@@ -23,6 +23,19 @@ export default function CalendarView({ data }: { data: Evento[] }) {
   const end = endOfMonth(currentMonth)
   const days = eachDayOfInterval({ start, end })
 
+  const formatTime = (value?: string | null) => {
+    if (!value) return '—'
+    // value viene como 'HH:mm:ss'
+    const [hours, minutes] = value.split(':')
+    if (!hours || !minutes) return value
+    const date = new Date()
+    date.setHours(Number(hours), Number(minutes), 0, 0)
+    return date.toLocaleTimeString('es-MX', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   function eventsOn(day: Date) {
     return (data || []).filter((e) => {
       const fi = e.fechaInicio ? parseISO(e.fechaInicio) : null
@@ -150,10 +163,16 @@ export default function CalendarView({ data }: { data: Evento[] }) {
                 .map((e) => (
                   <div
                     key={e.id}
-                    className="text-[11px] px-2 py-1 rounded bg-primary/10"
+                    className="px-2 py-1 rounded bg-primary/10"
                   >
-                    {e.nombre}
+                    <div className="text-[11px] font-medium">
+                      {e.nombre}
+                    </div>
+                    <div className="text-[11px]">
+                      {formatTime(e.horarioInicio)} - {formatTime(e.horarioFin)}
+                    </div>
                   </div>
+                  
                 ))}
               {eventsOn(d).length > 3 && (
                 <div className="text-[11px] text-gray-500">
