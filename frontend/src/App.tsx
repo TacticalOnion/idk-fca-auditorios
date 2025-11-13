@@ -14,6 +14,7 @@ import RecintosGallery from './pages/recintos/RecintosGallery'
 import PonentesPage from './pages/ponentes/PonentesPage'
 import UsuariosPage from './pages/usuarios/UsuariosPage'
 import FuncionariosPage from './pages/funcionarios/FuncionariosPage'
+import MisEventosPage from '@/pages/mis-eventos/MisEventosPage'
 
 function Private({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="ponentes" element={<PonentesPage/>} />
           <Route path="usuarios" element={<UsuariosPage/>} />
           <Route path="funcionarios" element={<FuncionariosPage/>} />
+          <Route path="mis-eventos" element={<MisEventosPage/>} />
         </Route>
       </Routes>
     </AuthProvider>

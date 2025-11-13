@@ -65,19 +65,34 @@ function getOrganizadorNombreCompleto(o: OrganizadorEvento): string {
   return parts.length ? parts.join(' ') : '-'
 }
 
+type EventDetailSheetProps = {
+  id: number | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  /**
+   * Base path del endpoint de detalle.
+   * - EventosPage  -> "/api/eventos"
+   * - MisEventosPage -> "/api/mis-eventos"
+   */
+  basePath?: string
+}
+
 export default function EventDetailSheet({
   id,
   open,
   onOpenChange,
-}: {
-  id: number
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const { data } = useQuery({
-    queryKey: ['evento-detalle', id],
-    queryFn: async () =>
-      (await api.get<DetalleEvento>(`/api/eventos/${id}/detalle`)).data,
+  basePath = '/api/eventos',
+}: EventDetailSheetProps) {
+  const enabled = open && id != null
+
+  const { data} = useQuery({
+    queryKey: ['evento-detalle', basePath, id],
+    enabled,
+    queryFn: async () => {
+      if (id == null) return null
+      const res = await api.get<DetalleEvento>(`${basePath}/${id}/detalle`)
+      return res.data
+    },
   })
 
   const ev: Evento | undefined = data?.evento

@@ -26,7 +26,8 @@ export {
   Sheet,
   SheetContent,
   SheetHeader,
-  SheetTitle
+  SheetTitle,
+  SheetDescription
 } from "@/components/ui/sheet"
 
 export {
