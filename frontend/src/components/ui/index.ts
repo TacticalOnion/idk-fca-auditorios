@@ -47,3 +47,5 @@ export {
 export { Badge } from "@/components/ui/badge"
 
 export { Separator } from "@/components/ui/separator"
+
+export {Textarea} from "@/components/ui/textarea"
