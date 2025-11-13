@@ -303,7 +303,6 @@ export default function EventosPage() {
           </select>
           {/* botones de exportación activables solo con selección */}
           <Button
-            variant="outline"
             disabled={selectedIds.length === 0}
             onClick={downloadSelectedXls}
           >
@@ -312,7 +311,6 @@ export default function EventosPage() {
           </Button>
 
           <Button
-            variant="outline"
             disabled={selectedIds.length === 0}
             onClick={downloadSelectedPdf}
           >
