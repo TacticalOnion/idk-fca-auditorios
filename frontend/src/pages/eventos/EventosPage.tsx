@@ -73,6 +73,7 @@ export default function EventosPage(){
             <option value="pendiente">Pendiente</option>
             <option value="autorizado">Autorizado</option>
             <option value="cancelado">Cancelado</option>
+            <option value="realizado">Realizado</option>
           </select>
           <Button onClick={()=>setOpenCreate(true)}><Plus size={16} className="mr-2" /> Nuevo</Button>
         </div>
@@ -97,6 +98,7 @@ export default function EventosPage(){
                       {e.estatus==='autorizado' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-green-100 text-green-800">Autorizado</span>}
                       {e.estatus==='pendiente' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800">Pendiente</span>}
                       {e.estatus==='cancelado' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">Cancelado</span>}
+                      {e.estatus==='realizado' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-cyan-100 text-cyan-700">Realizado</span>}
                     </TD>
                     <TD>{e.fechaInicio} {e.horarioInicio} — {e.fechaFin} {e.horarioFin}</TD>
                     <TD>{e.presencial && 'Presencial'} {e.online && 'Online'}</TD>

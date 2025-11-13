@@ -1,7 +1,7 @@
 export type Evento = {
   id: number
   nombre: string
-  estatus: 'pendiente' | 'autorizado' | 'cancelado'
+  estatus: 'pendiente' | 'autorizado' | 'cancelado' | 'realizado'
   descripcion?: string
   motivo?: string
   fechaInicio?: string
