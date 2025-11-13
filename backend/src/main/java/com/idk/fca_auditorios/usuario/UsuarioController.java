@@ -32,13 +32,13 @@ public class UsuarioController {
   }
 
   @GetMapping
-  @PreAuthorize("hasRole('superadministrador')")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
   public List<Usuario> listAll() {
     return repo.findAll();
   }
 
   @PostMapping("/{id}/reset-password")
-  @PreAuthorize("hasRole('superadministrador')")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
   public void resetPassword(@PathVariable Long id, @RequestParam @NotBlank String nueva) {
     service.resetPassword(id, nueva);
   }
@@ -68,7 +68,7 @@ public class UsuarioController {
   // -----------------------------------------------------------------------
 
   @PostMapping
-  @PreAuthorize("hasRole('superadministrador')")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
   public Usuario create(@Valid @RequestBody UsuarioCreateRequest b) {
     final long idRol = resolveRolIdByName(b.rol());
     final long idPuesto = resolvePuestoId(b.idPuesto(), b.nombrePuesto());
@@ -93,7 +93,7 @@ public class UsuarioController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasRole('superadministrador')")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
   public Usuario update(@PathVariable Long id, @Valid @RequestBody UsuarioUpdateRequest b) {
     // 1) Campos simples por JPA
     Usuario u = repo.findById(id).orElseThrow();
@@ -123,14 +123,14 @@ public class UsuarioController {
   }
 
   @PostMapping("/{id}/activar")
-  @PreAuthorize("hasRole('superadministrador')")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
   public Map<String,Object> activar(@PathVariable Long id) {
     jdbc.update("UPDATE usuario SET activo=true WHERE id_usuario=?", id);
     return Map.of("ok", true);
   }
 
   @PostMapping("/{id}/desactivar")
-  @PreAuthorize("hasRole('superadministrador')")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
   public Map<String,Object> desactivar(@PathVariable Long id) {
     jdbc.update("UPDATE usuario SET activo=false WHERE id_usuario=?", id);
     return Map.of("ok", true);
