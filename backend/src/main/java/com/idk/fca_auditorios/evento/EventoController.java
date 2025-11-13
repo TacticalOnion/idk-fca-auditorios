@@ -199,6 +199,29 @@ public class EventoController {
         .body(zip);
   }
 
+  @PostMapping("/{id}/descargar-semblanzas")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  public ResponseEntity<Resource> descargarSemblanzas(@PathVariable Long id) throws Exception {
+    // Reutilizamos la misma consulta de ponentes del evento
+    List<Long> ponentes = repoPonentesDelEvento(id);
+    if (ponentes.isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+
+    List<java.nio.file.Path> archivos = new ArrayList<>();
+    for (Long idPonente : ponentes) {
+      String nombrePdf = "semblanza_ponente_" + idPonente + ".pdf";
+      archivos.add(pdfService.generarSemblanza(idPonente, nombrePdf));
+    }
+
+    Resource zip = zipService.zip("semblanzas_evento_" + id + ".zip", archivos);
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zip.getFilename())
+        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+        .body(zip);
+  }
+
+
   @PostMapping("")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   public Evento crear(@Valid @RequestBody EventoCreateRequest body) {

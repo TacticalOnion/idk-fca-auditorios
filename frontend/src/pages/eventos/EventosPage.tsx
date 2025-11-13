@@ -149,6 +149,17 @@ export default function EventosPage() {
     }
   }
 
+  async function descargarSemblanzas(id:number){
+    try{
+      const res = await api.post(`/api/eventos/${id}/descargar-semblanzas`, null, { responseType:'blob' })
+      const url = URL.createObjectURL(res.data)
+      const a = document.createElement('a'); a.href = url; a.download = `semblanzas_evento_${id}.zip`; a.click()
+      URL.revokeObjectURL(url)
+    }catch{
+      toast.error('No hay semblanzas o error de descarga')
+    }
+  }
+
   // --------- selección / CSV ----------
 
   const allSelected =
@@ -350,6 +361,7 @@ export default function EventosPage() {
                   <TH className="text-center">Detalles</TH>
                   <TH className="text-center">Verificar equipamiento</TH>
                   <TH className="text-center">Reconocimientos</TH>
+                  <TH className="text-center">Semblanzas</TH>
                 </TR>
               </THead>
               <TBody>
@@ -467,6 +479,17 @@ export default function EventosPage() {
                           title="Descargar reconocimientos"
                         >
                           <Download size={18} />
+                        </Button>
+                      </TD>
+
+                      {/* Semblanzas */}
+                      <TD className="text-center">
+                        <Button
+                          variant="ghost"
+                          onClick={()=>descargarSemblanzas(e.id)}
+                          title="Descargar semblanzas"
+                        >
+                          <Download size={16}/>
                         </Button>
                       </TD>
                     </TR>
