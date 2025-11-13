@@ -1,103 +1,49 @@
-export type PonenteEvento = {
-  nombreCompleto: string
-  semblanza?: string | null
-  reconocimiento?: string | null
+export interface PonenteEvento {
+  nombreCompleto: string;
+  semblanza: string | null;
+  reconocimiento: string | null;
 }
 
-export type OrganizadorEvento = {
-  nombreCompleto: string
+export interface OrganizadorEvento {
+  nombreCompleto: string;
 }
 
-export type AreaEvento = {
-  area: string
+export interface AreaEvento {
+  area: string;
 }
 
-export type EquipamientoEvento = {
-  equipamiento: string
-  cantidad: number
+export interface EquipamientoEvento {
+  equipamiento: string;
+  cantidad: number;
 }
 
-export type Evento = {
-  id: number
-  nombre: string
-  estatus: 'pendiente' | 'autorizado' | 'cancelado' | 'realizado'
-  descripcion?: string
-  motivo?: string
-  fechaInicio?: string
-  fechaFin?: string
-  horarioInicio?: string
-  horarioFin?: string
-  presencial?: boolean
-  online?: boolean
-  numeroRegistro?: number | null
-  megaEvento?: boolean
-  idMegaEvento?: number
-  idCategoria?: number
-  idCalendarioEscolar?: number
+export interface Evento {
+  id: number;
+  nombre: string;
+  categoria?: string | null;
 
-  // extras para TableView
-  fechaRegistro?: string
-  categoria?: string | null
-  nombreMegaEvento?: string | null    // nombre del mega evento (si aplica)
-  isMegaEvento?: string | null        // 'Mega Evento' o null
-  recinto?: string | null
-  calendarioEscolar?: string | null
+  // Info de mega evento
+  megaEvento?: boolean | null;          // viene de e.mega_evento (boolean)
+  isMegaEvento?: string | null;         // 'Mega Evento' o null
+  nombreMegaEvento?: string | null;     // nombre del mega evento (me.nombre)
+  recinto?: string | null;
 
-  ponentes?: PonenteEvento[]
-  organizadores?: OrganizadorEvento[]
-  areas?: AreaEvento[]
-  equipamiento?: EquipamientoEvento[]
-}
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+  horarioInicio?: string | null;
+  horarioFin?: string | null;
 
-// (deja el resto de tipos que ya tienes)
-export type Calendario = {
-  id: number
-  semestre: string
-  semestreInicio: string
-  semestreFin: string
-  periodos: Periodo[]
-}
+  presencial?: boolean | null;
+  online?: boolean | null;
+  estatus: string;
+  descripcion?: string | null;
+  motivo?: string | null;
+  fechaRegistro?: string | null;
+  numeroRegistro?: string | null;
+  calendarioEscolar?: string | null;
 
-export type Periodo = {
-  id: number
-  idTipoPeriodo: number
-  fechaInicio: string
-  fechaFin: string
-}
-
-export type DetalleEvento = {
-  evento: Record<string, unknown>
-  organizadores: Organizador[]
-  recintos: RecintoDet[]
-  equipamiento: EquipamientoDet[]
-  areas: AreaDet[]
-}
-
-export type Organizador = {
-  id: number
-  username: string
-  nombre?: string
-  apellidoPaterno?: string
-  apellidoMaterno?: string
-  correo?: string
-}
-
-export type RecintoDet = {
-  id: number
-  nombre: string
-  aforo?: number
-  croquis?: string | null
-}
-
-export type EquipamientoDet = {
-  id: number
-  nombre: string
-  solicitado: number
-  disponible: number
-  faltante: number
-}
-
-export type AreaDet = {
-  id: number
-  nombre: string
+  ponentes?: PonenteEvento[] | string | null;
+  organizadores?: OrganizadorEvento[] | string | null;
+  areas?: AreaEvento[] | string | null;
+  equipamiento?: EquipamientoEvento[] | string | null;
 }

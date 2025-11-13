@@ -20,7 +20,7 @@ import {
 } from '@ui/index'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Download, Search, Plus } from 'lucide-react'
+import { Download, Plus, ClipboardCheck } from 'lucide-react'
 import KanbanView from './KanbanView'
 import CalendarView from './CalendarView'
 import CreateEventSheet from '@/components/CreateEventSheet'
@@ -37,23 +37,40 @@ import axios from 'axios'
 function normalizeJsonArray<T>(value: unknown): T[] {
   if (value == null) return []
 
+  // Ya es un arreglo real
   if (Array.isArray(value)) {
     return value as T[]
   }
 
+  // Caso típico de Postgres jsonb con JdbcTemplate:
+  // { type: 'jsonb', value: '[{...}]' }
+  if (typeof value === 'object') {
+    const v = (value as { value?: unknown }).value
+
+    if (Array.isArray(v)) {
+      return v as T[]
+    }
+
+    if (typeof v === 'string') {
+      try {
+        const parsed = JSON.parse(v)
+        return Array.isArray(parsed) ? (parsed as T[]) : []
+      } catch {
+        return []
+      }
+    }
+  }
+
+  // Si viene como string JSON plano
   if (typeof value === 'string') {
     try {
       const parsed = JSON.parse(value)
-      if (Array.isArray(parsed)) {
-        return parsed as T[]
-      }
-      return []
+      return Array.isArray(parsed) ? (parsed as T[]) : []
     } catch {
       return []
     }
   }
 
-  // Si por alguna razón viene como objeto u otro tipo que no sea array/string
   return []
 }
 
@@ -112,49 +129,6 @@ export default function EventosPage() {
               'Error al verificar'
           : 'Error al verificar',
       ),
-  })
-
-  const autorizar = useMutation({
-    mutationFn: async (id: number) =>
-      (await api.post(`/api/eventos/${id}/autorizar`)).data,
-    onSuccess: () => {
-      toast.success('Evento autorizado')
-      qc.invalidateQueries({ queryKey: ['eventos'] })
-    },
-    onError: (err: unknown) =>
-      toast.error(
-        axios.isAxiosError(err)
-          ? (err.response?.data as { message?: string })?.message ??
-              'No se puede autorizar'
-          : 'No se puede autorizar',
-      ),
-  })
-
-  const cancelar = useMutation({
-    mutationFn: async ({ id, motivo }: { id: number; motivo: string }) =>
-      (await api.post(`/api/eventos/${id}/cancelar`, null, { params: { motivo } }))
-        .data,
-    onSuccess: () => {
-      toast.success('Evento cancelado')
-      qc.invalidateQueries({ queryKey: ['eventos'] })
-    },
-    onError: (err: unknown) =>
-      toast.error(
-        axios.isAxiosError(err)
-          ? (err.response?.data as { message?: string })?.message ??
-              'Error al cancelar'
-          : 'Error al cancelar',
-      ),
-  })
-
-  const deshacer = useMutation({
-    mutationFn: async (id: number) =>
-      (await api.post(`/api/eventos/${id}/deshacer`)).data,
-    onSuccess: () => {
-      toast.success('Estatus revertido')
-      qc.invalidateQueries({ queryKey: ['eventos'] })
-    },
-    onError: () => toast.error('Error al revertir'),
   })
 
   async function descargarZip(id: number) {
@@ -373,20 +347,18 @@ export default function EventosPage() {
                   <TH>Organizadores</TH>
                   <TH>Áreas</TH>
                   <TH>Equipamiento</TH>
-                  <TH></TH>
+                  <TH className="text-center">Detalles</TH>
+                  <TH className="text-center">Verificar equipamiento</TH>
+                  <TH className="text-center">Reconocimientos</TH>
                 </TR>
               </THead>
               <TBody>
                 {filtered.map((e) => {
                   const isSelected = selectedIds.includes(e.id)
-                  const ponentes = normalizeJsonArray<PonenteEvento>(
-                    e.ponentes,
-                  )
-                  const organizadores =
-                    normalizeJsonArray<OrganizadorEvento>(e.organizadores)
+                  const ponentes = normalizeJsonArray<PonenteEvento>(e.ponentes)
+                  const organizadores = normalizeJsonArray<OrganizadorEvento>(e.organizadores)
                   const areas = normalizeJsonArray<AreaEvento>(e.areas)
-                  const equipamiento =
-                    normalizeJsonArray<EquipamientoEvento>(e.equipamiento)
+                  const equipamiento = normalizeJsonArray<EquipamientoEvento>(e.equipamiento)
 
                   return (
                     <TR key={e.id} className="align-top">
@@ -402,10 +374,10 @@ export default function EventosPage() {
                       <TD>{e.nombreMegaEvento ?? '-'}</TD>
                       <TD>{e.isMegaEvento ?? ''}</TD>
                       <TD>{e.recinto ?? '-'}</TD>
-                      <TD>{e.fechaInicio}</TD>
-                      <TD>{e.fechaFin}</TD>
-                      <TD>{e.horarioInicio}</TD>
-                      <TD>{e.horarioFin}</TD>
+                      <TD>{e.fechaInicio ?? '-'}</TD>
+                      <TD>{e.fechaFin ?? '-'}</TD>
+                      <TD>{e.horarioInicio ?? '-'}</TD>
+                      <TD>{e.horarioFin ?? '-'}</TD>
                       <TD>{e.presencial ? 'Sí' : 'No'}</TD>
                       <TD>{e.online ? 'Sí' : 'No'}</TD>
                       <TD>
@@ -432,80 +404,69 @@ export default function EventosPage() {
                       </TD>
                       <TD>{e.numeroRegistro ?? '-'}</TD>
                       <TD>{e.calendarioEscolar ?? '-'}</TD>
+
+                      {/* Ponentes */}
                       <TD>
-                        {ponentes.map((p, idx) => (
-                          <div key={idx} className="text-xs">
-                            {p.nombreCompleto}
-                          </div>
-                        ))}
+                        {ponentes.length
+                          ? ponentes.map((p) => p.nombreCompleto).join(', ')
+                          : '-'}
                       </TD>
+
+                      {/* Organizadores */}
                       <TD>
-                        {organizadores.map((o, idx) => (
-                          <div key={idx} className="text-xs">
-                            {o.nombreCompleto}
-                          </div>
-                        ))}
+                        {organizadores.length
+                          ? organizadores.map((o) => o.nombreCompleto).join(', ')
+                          : '-'}
                       </TD>
+
+                      {/* Áreas */}
                       <TD>
-                        {areas.map((a, idx) => (
-                          <div key={idx} className="text-xs">
-                            {a.area}
-                          </div>
-                        ))}
+                        {areas.length
+                          ? areas.map((a) => a.area).join(', ')
+                          : '-'}
                       </TD>
+
+                      {/* Equipamiento */}
                       <TD>
-                        {equipamiento.map((eq, idx) => (
-                          <div key={idx} className="text-xs">
-                            {eq.cantidad} x {eq.equipamiento}
-                          </div>
-                        ))}
+                        {equipamiento.length
+                          ? equipamiento
+                              .map((eq) => `${eq.equipamiento} (${eq.cantidad})`)
+                              .join(', ')
+                          : '-'}
                       </TD>
-                      <TD className="flex gap-2">
+
+                      {/* Detalles */}
+                      <TD className="text-center">
                         <Button
                           variant="outline"
+                          size="sm"
                           onClick={() => openDetailSheet(e)}
                         >
                           Ver
                         </Button>
+                      </TD>
+
+                      {/* Verificar equipamiento */}
+                      <TD className="text-center">
                         <Button
                           variant="ghost"
+                          size="icon"
                           onClick={() => verificar.mutate(e.id)}
                           title="Verificar equipamiento"
                         >
-                          <Search size={16} />
+                          <ClipboardCheck size={18} />
                         </Button>
+                      </TD>
+
+                      {/* Reconocimientos */}
+                      <TD className="text-center">
                         <Button
                           variant="ghost"
-                          onClick={() => autorizar.mutate(e.id)}
-                          title="Autorizar"
-                        >
-                          Autorizar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() =>
-                            cancelar.mutate({
-                              id: e.id,
-                              motivo: 'No especificado',
-                            })
-                          }
-                          title="Cancelar"
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => deshacer.mutate(e.id)}
-                          title="Deshacer"
-                        >
-                          Deshacer
-                        </Button>
-                        <Button
-                          variant="ghost"
+                          size="icon"
                           onClick={() => descargarZip(e.id)}
                           title="Descargar reconocimientos"
                         >
-                          <Download size={16} />
+                          <Download size={18} />
                         </Button>
                       </TD>
                     </TR>
@@ -527,13 +488,16 @@ export default function EventosPage() {
         </Tabs>
       </CardContent>
 
-      {/* Detalle */}
-      {openDetail && selId && (
+      {/* Detalle como Sheet controlado */}
+      {selId !== null && (
         <EventDetailSheet
           id={selId}
-          onClose={() => {
-            setOpenDetail(false)
-            setSelId(null)
+          open={openDetail}
+          onOpenChange={(isOpen) => {
+            setOpenDetail(isOpen)
+            if (!isOpen) {
+              setSelId(null)
+            }
           }}
         />
       )}

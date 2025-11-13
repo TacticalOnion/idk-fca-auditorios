@@ -39,31 +39,31 @@ public class EventoController {
           e.nombre          AS nombre,
           e.descripcion     AS descripcion,
           e.estatus         AS estatus,
-          e.fecha_inicio    AS fechaInicio,
-          e.fecha_fin       AS fechaFin,
-          e.horario_inicio  AS horarioInicio,
-          e.horario_fin     AS horarioFin,
+          e.fecha_inicio    AS "fechaInicio",
+          e.fecha_fin       AS "fechaFin",
+          e.horario_inicio  AS "horarioInicio",
+          e.horario_fin     AS "horarioFin",
           e.presencial      AS presencial,
           e.online          AS online,
-          e.fecha_registro  AS fechaRegistro,
-          r.numero_registro AS numeroRegistro,
+          e.fecha_registro  AS "fechaRegistro",
+          r.numero_registro AS "numeroRegistro",
 
           -- categoría
-          e.id_categoria          AS idCategoria,
+          e.id_categoria          AS "idCategoria",
           c.nombre                AS categoria,
 
           -- mega evento
-          e.mega_evento           AS megaEvento,
-          e.id_mega_evento        AS idMegaEvento,
-          me.nombre               AS nombreMegaEvento,
+          e.mega_evento           AS "megaEvento",
+          e.id_mega_evento        AS "idMegaEvento",
+          me.nombre               AS "nombreMegaEvento",
           CASE WHEN e.mega_evento IS TRUE
               THEN 'Mega Evento'
               ELSE NULL
-          END                     AS isMegaEvento,
+          END                     AS "isMegaEvento",
 
           -- calendario escolar
-          e.id_calendario_escolar AS idCalendarioEscolar,
-          ce.semestre             AS calendarioEscolar,
+          e.id_calendario_escolar AS "idCalendarioEscolar",
+          ce.semestre             AS "calendarioEscolar",
 
           -- recinto principal (de la reservación)
           rc.nombre               AS recinto,
@@ -73,11 +73,11 @@ public class EventoController {
             SELECT jsonb_agg(
                     jsonb_build_object(
                       'nombreCompleto',
-                      p.nombre || ' ' || p.apellido_paterno || ' ' || COALESCE(p.apellido_materno,''),
+                        p.nombre || ' ' || p.apellido_paterno || ' ' || COALESCE(p.apellido_materno,''),
                       'semblanza',
-                      s.archivo,
+                        s.archivo,
                       'reconocimiento',
-                      pa.reconocimiento
+                        pa.reconocimiento
                     )
                   )
             FROM participacion pa
@@ -91,7 +91,7 @@ public class EventoController {
             SELECT jsonb_agg(
                     jsonb_build_object(
                       'nombreCompleto',
-                      u.nombre || ' ' || u.apellido_paterno || ' ' || COALESCE(u.apellido_materno,'')
+                        u.nombre || ' ' || u.apellido_paterno || ' ' || COALESCE(u.apellido_materno,'')
                     )
                   )
             FROM evento_organizador eo
