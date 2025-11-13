@@ -187,7 +187,7 @@ function Topbar() {
       {/* Logo + título como link */}
       <NavLink to="/" className="flex items-center gap-3 hover:opacity-90">
         <img src="/idk-logo.svg" alt="IDK Logo" className="h-8 w-auto" />
-        <span className="font-semibold">IDK FCA Auditorios</span>
+        <span className="font-semibold">FCA Auditorios</span>
       </NavLink>
 
       <div className="flex items-center gap-3">
