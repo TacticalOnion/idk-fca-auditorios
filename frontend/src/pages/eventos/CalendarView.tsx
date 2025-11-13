@@ -14,10 +14,15 @@ import {
 import { es } from 'date-fns/locale'
 import type { Evento } from '../../types'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import EventDetailSheet from "@/pages/eventos/EventDetailSheet"
 
 export default function CalendarView({ data }: { data: Evento[] }) {
   // Estado para el mes que se está viendo, por defecto el mes actual
   const [currentMonth, setCurrentMonth] = useState<Date>(startOfMonth(new Date()))
+
+  // Estado para el detalle del evento
+  const [selId, setSelId] = useState<Evento['id'] | null>(null)
+  const [openDetail, setOpenDetail] = useState(false)
 
   const start = startOfMonth(currentMonth)
   const end = endOfMonth(currentMonth)
@@ -114,7 +119,6 @@ export default function CalendarView({ data }: { data: Evento[] }) {
           </button>
         </div>
 
-
         <div className="flex items-center gap-2">
           <select
             value={currentMonthIndex}
@@ -149,6 +153,7 @@ export default function CalendarView({ data }: { data: Evento[] }) {
             {h}
           </div>
         ))}
+
         {days.map((d) => (
           <div
             key={d.toISOString()}
@@ -163,7 +168,11 @@ export default function CalendarView({ data }: { data: Evento[] }) {
                 .map((e) => (
                   <div
                     key={e.id}
-                    className="px-2 py-1 rounded bg-primary/10"
+                    className="px-2 py-1 rounded bg-primary/10 cursor-pointer hover:bg-primary/20"
+                    onClick={() => {
+                      setSelId(e.id)
+                      setOpenDetail(true)
+                    }}
                   >
                     <div className="text-[11px] font-medium">
                       {e.nombre}
@@ -172,7 +181,6 @@ export default function CalendarView({ data }: { data: Evento[] }) {
                       {formatTime(e.horarioInicio)} - {formatTime(e.horarioFin)}
                     </div>
                   </div>
-                  
                 ))}
               {eventsOn(d).length > 3 && (
                 <div className="text-[11px] text-gray-500">
@@ -183,6 +191,20 @@ export default function CalendarView({ data }: { data: Evento[] }) {
           </div>
         ))}
       </div>
+
+      {/* Sheet de detalle (solo uno, fuera del map) */}
+      {selId !== null && (
+        <EventDetailSheet
+          id={selId}
+          open={openDetail}
+          onOpenChange={(isOpen) => {
+            setOpenDetail(isOpen)
+            if (!isOpen) {
+              setSelId(null)
+            }
+          }}
+        />
+      )}
     </div>
   )
 }
