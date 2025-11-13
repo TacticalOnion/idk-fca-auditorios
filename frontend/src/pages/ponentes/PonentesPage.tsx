@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Table, TBody, TD, TH, THead, TR, Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from '@ui/index'
 import { useMemo, useState } from 'react'
@@ -19,15 +19,6 @@ export default function PonentesPage(){
   const rows = useMemo(()=> (data||[])
     .filter(p=> (p.nombre+' '+(p.apellido_paterno||'')+' '+(p.apellido_materno||'')).toLowerCase().includes(q.toLowerCase()))
     .filter(p=> !pais || String(p.id_pais)===pais), [data,q,pais])
-
-  const generar = useMutation({
-    mutationFn: async (id:number)=>{
-      const fileName = `semblanza_ponente_${id}.pdf`
-      await api.post(`/api/ponentes/${id}/generar-semblanza`, null, { params:{ nombreArchivoPdf:fileName } })
-    },
-    onSuccess: ()=> toast.success('Semblanza generada'),
-    onError: ()=> toast.error('Error al generar semblanza')
-  })
 
   async function descargar(ids:number[]){
     try{
@@ -69,7 +60,6 @@ export default function PonentesPage(){
                 <TD>{p.nombre} {p.apellido_paterno||''} {p.apellido_materno||''}</TD>
                 <TD>{p.id_pais}</TD>
                 <TD><SemblanzaPill generada={Boolean(p.semblanzaArchivo)} /></TD>
-                <TD><Button onClick={()=>generar.mutate(p.id)}>Generar</Button></TD>
               </TR>
             ))}
           </TBody>
