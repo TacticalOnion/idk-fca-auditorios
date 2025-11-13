@@ -1,4 +1,5 @@
 export interface PonenteEvento {
+  id: number;
   nombreCompleto: string;
   semblanza: string | null;
   reconocimiento: string | null;
@@ -15,6 +16,8 @@ export interface AreaEvento {
 export interface EquipamientoEvento {
   equipamiento: string;
   cantidad: number;
+  disponible?: boolean | null;
+  cantidadFaltante?: number | null;
 }
 
 export interface Evento {
@@ -46,4 +49,13 @@ export interface Evento {
   organizadores?: OrganizadorEvento[] | string | null;
   areas?: AreaEvento[] | string | null;
   equipamiento?: EquipamientoEvento[] | string | null;
+}
+
+/** Payload que devuelve GET /api/eventos/{id}/detalle */
+export interface DetalleEvento {
+  evento: Evento;
+  ponentes: PonenteEvento[];
+  organizadores?: OrganizadorEvento[];
+  areas: AreaEvento[];
+  equipamiento: EquipamientoEvento[];
 }

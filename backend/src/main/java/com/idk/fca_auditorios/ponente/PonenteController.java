@@ -91,6 +91,52 @@ public class PonenteController {
     return Map.of("ok", true, "archivo", pdfPath.toString(), "updated", updated > 0);
   }
 
+  @PostMapping("/{id}/descargar-semblanza")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  public ResponseEntity<Resource> descargarSemblanzaIndividual(@PathVariable Long id) throws Exception {
+    // 1) Intentar recuperar la ruta de semblanza ya generada
+    Map<String, Object> s;
+    try {
+      s = jdbc.queryForMap(
+          "SELECT archivo FROM semblanza WHERE id_ponente=? LIMIT 1",
+          id
+      );
+    } catch (org.springframework.dao.EmptyResultDataAccessException ex) {
+      s = null;
+    }
+
+    String archivo = (s != null && s.get("archivo") != null)
+        ? String.valueOf(s.get("archivo"))
+        : null;
+
+    java.nio.file.Path pdfPath;
+
+    // 2) Si no existe registro o el archivo ya no está en disco, lo generamos
+    if (archivo == null || !java.nio.file.Files.exists(java.nio.file.Paths.get(archivo))) {
+      String fileName = buildSemblanzaFileName(id);
+      pdfPath = pdf.generarSemblanza(id, fileName);
+
+      jdbc.update("""
+          INSERT INTO semblanza(id_ponente, archivo)
+          VALUES (?,?)
+          ON CONFLICT (id_ponente) DO UPDATE SET archivo = EXCLUDED.archivo
+          """, id, pdfPath.toString());
+    } else {
+      pdfPath = java.nio.file.Paths.get(archivo);
+    }
+
+    Resource resource = new org.springframework.core.io.FileSystemResource(pdfPath);
+    if (!resource.exists()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=" + pdfPath.getFileName().toString())
+        .contentType(MediaType.APPLICATION_PDF)
+        .body(resource);
+  }
+
   @PostMapping("/descargar-semblanzas")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   public ResponseEntity<Resource> descargarSemblanzas(@RequestBody Map<String,Object> body) throws Exception {

@@ -295,67 +295,207 @@ public class EventoController {
 
   @GetMapping("/{id}/detalle")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  public Map<String,Object> detalle(@PathVariable Long id) {
-    Map<String,Object> evento = jdbc.queryForMap("""
-      SELECT e.id_evento as id, e.nombre, e.descripcion, e.estatus, e.motivo,
-            e.fecha_inicio as fechaInicio, e.fecha_fin as fechaFin,
-            e.horario_inicio as horarioInicio, e.horario_fin as horarioFin,
-            e.presencial, e.online, e.id_categoria as idCategoria, e.id_calendario_escolar as idCalendarioEscolar
-      FROM evento e WHERE e.id_evento = ?
-    """, id);
+  public Map<String, Object> detalle(@PathVariable Long id) {
+    // ── 1) Datos principales del evento (evento.nombre, categoria, megaEvento, etc.)
+    Map<String, Object> evento = jdbc.queryForMap("""
+        SELECT
+          e.id_evento       AS id,
+          e.nombre          AS nombre,
+          e.descripcion     AS descripcion,
+          e.estatus         AS estatus,
+          e.motivo          AS motivo,
+          e.fecha_inicio    AS "fechaInicio",
+          e.fecha_fin       AS "fechaFin",
+          e.horario_inicio  AS "horarioInicio",
+          e.horario_fin     AS "horarioFin",
+          e.presencial      AS presencial,
+          e.online          AS online,
+          e.fecha_registro  AS "fechaRegistro",
+          r.numero_registro AS "numeroRegistro",
 
-    List<Map<String,Object>> organizadores = jdbc.queryForList("""
-      SELECT u.id_usuario as id, u.nombre_usuario as username, u.nombre, u.apellido_paterno as apellidoPaterno,
-            u.apellido_materno as apellidoMaterno, u.correo
-      FROM evento_organizador eo
-      JOIN usuario u ON u.id_usuario = eo.id_usuario
-      WHERE eo.id_evento = ?
-      ORDER BY u.nombre
-    """, id);
+          -- categoría: nombre
+          e.id_categoria          AS "idCategoria",
+          c.nombre                AS categoria,
 
-    List<Map<String,Object>> recintos = jdbc.queryForList("""
-      SELECT r.id_recinto as id, r.nombre, r.aforo, r.croquis
-      FROM reservacion rv
-      JOIN recinto r ON r.id_recinto = rv.id_recinto
-      WHERE rv.id_evento = ?
-      ORDER BY r.nombre
-    """, id);
+          -- mega evento (bandera + nombre del mega evento + etiqueta 'Mega Evento')
+          e.mega_evento           AS "megaEvento",
+          e.id_mega_evento        AS "idMegaEvento",
+          me.nombre               AS "nombreMegaEvento",
+          CASE WHEN e.mega_evento IS TRUE
+              THEN 'Mega Evento'
+              ELSE NULL
+          END                     AS "isMegaEvento",
 
-    List<Map<String,Object>> equipamiento = jdbc.queryForList("""
-      WITH disp AS (
-        SELECT e.id_equipamiento,
-              COALESCE((SELECT SUM(cantidad) FROM inventario_area   ia WHERE ia.id_equipamiento=e.id_equipamiento AND COALESCE(ia.activo,true)=true),0) +
-              COALESCE((SELECT SUM(cantidad) FROM inventario_recinto ir WHERE ir.id_equipamiento=e.id_equipamiento AND COALESCE(ir.activo,true)=true),0) AS disponible
-        FROM equipamiento e
-      )
-      SELECT ex.id_equipamiento as id, eq.nombre, ex.cantidad as solicitado,
-            COALESCE(d.disponible,0) as disponible,
-            GREATEST(ex.cantidad - COALESCE(d.disponible,0),0) as faltante
-      FROM eventoxequipamiento ex
-      JOIN equipamiento eq ON eq.id_equipamiento = ex.id_equipamiento
-      LEFT JOIN disp d ON d.id_equipamiento = ex.id_equipamiento
-      WHERE ex.id_evento = ?
-      ORDER BY eq.nombre
-    """, id);
+          -- calendario escolar (semestre)
+          e.id_calendario_escolar AS "idCalendarioEscolar",
+          ce.semestre             AS "calendarioEscolar",
 
-    // ⭐ ÁREAS INVOLUCRADAS: evento_organizador -> usuario -> puesto -> area (DISTINCT)
-    List<Map<String,Object>> areas = jdbc.queryForList("""
-      SELECT DISTINCT a.id_area AS id, a.nombre
-      FROM evento_organizador eo
-      JOIN usuario u ON u.id_usuario = eo.id_usuario
-      JOIN puesto  p ON p.id_puesto  = u.id_puesto
-      JOIN area    a ON a.id_area    = p.id_area
-      WHERE eo.id_evento = ?
-      ORDER BY a.nombre
-    """, id);
+          -- recinto principal (reservación)
+          rc.nombre               AS recinto
+
+        FROM evento e
+        LEFT JOIN reservacion r
+          ON r.id_evento = e.id_evento
+        LEFT JOIN recinto rc
+          ON rc.id_recinto = r.id_recinto
+        LEFT JOIN categoria c
+          ON c.id_categoria = e.id_categoria
+        LEFT JOIN calendario_escolar ce
+          ON ce.id_calendario_escolar = e.id_calendario_escolar
+        LEFT JOIN evento me
+          ON me.id_evento = e.id_mega_evento
+        WHERE e.id_evento = ?
+        """, id);
+
+    // ── 2) Ponentes: nombre completo, semblanza, reconocimiento
+    List<Map<String, Object>> ponentes = jdbc.queryForList("""
+        SELECT
+          p.id_ponente AS id,
+          p.nombre || ' ' || p.apellido_paterno || ' ' || COALESCE(p.apellido_materno, '') AS "nombreCompleto",
+          s.archivo AS semblanza,
+          pa.reconocimiento
+        FROM participacion pa
+        JOIN ponente p ON p.id_ponente = pa.id_ponente
+        LEFT JOIN semblanza s ON s.id_ponente = p.id_ponente
+        WHERE pa.id_evento = ?
+        ORDER BY p.nombre, p.apellido_paterno, p.apellido_materno
+        """, id);
+
+
+    // ── 3) Organizadores: solo nombreCompleto
+    List<Map<String, Object>> organizadores = jdbc.queryForList("""
+        SELECT
+          u.id_usuario AS id,
+          u.nombre || ' ' || u.apellido_paterno || ' ' || COALESCE(u.apellido_materno, '') AS "nombreCompleto"
+        FROM evento_organizador eo
+        JOIN usuario u ON u.id_usuario = eo.id_usuario
+        WHERE eo.id_evento = ?
+        ORDER BY u.nombre, u.apellido_paterno, u.apellido_materno
+        """, id);
+
+    // ── 4) Áreas involucradas: DISTINCT por organizadores
+    List<Map<String, Object>> areas = jdbc.queryForList("""
+        SELECT DISTINCT
+          a.id_area AS id,
+          a.nombre  AS area
+        FROM evento_organizador eo
+        JOIN usuario u ON u.id_usuario = eo.id_usuario
+        JOIN puesto  p2 ON p2.id_puesto = u.id_puesto
+        JOIN area    a  ON a.id_area   = p2.id_area
+        WHERE eo.id_evento = ?
+        ORDER BY a.nombre
+        """, id);
+
+    // ── 5) Equipamiento: nombre, cantidad, disponible (true/false), cantidadFaltante
+    List<Map<String, Object>> equipamiento = jdbc.queryForList("""
+        WITH disp AS (
+          SELECT e.id_equipamiento,
+                COALESCE((SELECT SUM(cantidad)
+                          FROM inventario_area ia
+                          WHERE ia.id_equipamiento = e.id_equipamiento
+                            AND COALESCE(ia.activo, true) = true), 0) +
+                COALESCE((SELECT SUM(cantidad)
+                          FROM inventario_recinto ir
+                          WHERE ir.id_equipamiento = e.id_equipamiento
+                            AND COALESCE(ir.activo, true) = true), 0) AS disponible
+          FROM equipamiento e
+        )
+        SELECT
+          ex.id_equipamiento AS id,
+          eq.nombre          AS equipamiento,
+          ex.cantidad        AS cantidad,
+          CASE
+            WHEN GREATEST(ex.cantidad - COALESCE(d.disponible, 0), 0) = 0
+              THEN TRUE
+            ELSE FALSE
+          END                AS disponible,
+          GREATEST(ex.cantidad - COALESCE(d.disponible, 0), 0) AS cantidadFaltante
+        FROM eventoxequipamiento ex
+        JOIN equipamiento eq ON eq.id_equipamiento = ex.id_equipamiento
+        LEFT JOIN disp d ON d.id_equipamiento = ex.id_equipamiento
+        WHERE ex.id_evento = ?
+        ORDER BY eq.nombre
+        """, id);
 
     return Map.of(
         "evento", evento,
+        "ponentes", ponentes,
         "organizadores", organizadores,
-        "recintos", recintos,
-        "equipamiento", equipamiento,
-        "areas", areas
+        "areas", areas,
+        "equipamiento", equipamiento
     );
+  }
+
+  @PostMapping("/{id}/descargar-semblanza")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  public ResponseEntity<Resource> descargarSemblanzaIndividual(@PathVariable Long id) throws Exception {
+    // 1) Intentar recuperar la ruta del archivo ya generado
+    Map<String, Object> s;
+    try {
+      s = jdbc.queryForMap(
+          "SELECT archivo FROM semblanza WHERE id_ponente=? LIMIT 1",
+          id
+      );
+    } catch (org.springframework.dao.EmptyResultDataAccessException ex) {
+      s = null;
+    }
+
+    String archivo = (s != null && s.get("archivo") != null)
+        ? String.valueOf(s.get("archivo"))
+        : null;
+
+    java.nio.file.Path pdfPath;
+
+    // 2) Si ya existe y el archivo está en disco, lo reutilizamos
+    if (archivo != null && java.nio.file.Files.exists(java.nio.file.Paths.get(archivo))) {
+      pdfPath = java.nio.file.Paths.get(archivo);
+    } else {
+      // 3) Si no existe o el archivo se perdió, lo generamos de nuevo
+      String fileName = buildSemblanzaFileName(id);
+      pdfPath = pdfService.generarSemblanza(id, fileName);
+
+      // upsert a la tabla semblanza
+      jdbc.update("""
+          INSERT INTO semblanza(id_ponente, archivo)
+          VALUES (?,?)
+          ON CONFLICT (id_ponente) DO UPDATE SET archivo = EXCLUDED.archivo
+        """, id, pdfPath.toString());
+    }
+
+    Resource resource = new org.springframework.core.io.FileSystemResource(pdfPath);
+    if (!resource.exists()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=" + pdfPath.getFileName().toString())
+        .contentType(MediaType.APPLICATION_PDF)
+        .body(resource);
+  }
+
+  @PostMapping("/{idEvento}/ponentes/{idPonente}/descargar-reconocimiento")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  public ResponseEntity<Resource> descargarReconocimientoIndividual(
+      @PathVariable("idEvento") Long idEvento,
+      @PathVariable("idPonente") Long idPonente
+  ) throws Exception {
+
+    // Generamos el nombre de archivo igual que en el ZIP
+    String nombrePdf = buildReconocimientoFileName(idEvento, idPonente);
+
+    java.nio.file.Path pdfPath = pdfService.generarReconocimiento(idPonente, idEvento, nombrePdf);
+
+    Resource resource = new org.springframework.core.io.FileSystemResource(pdfPath);
+    if (!resource.exists()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=" + pdfPath.getFileName().toString())
+        .contentType(MediaType.APPLICATION_PDF)
+        .body(resource);
   }
 
 }
