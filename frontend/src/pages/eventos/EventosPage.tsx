@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import {
   Button,
@@ -20,7 +20,7 @@ import {
 } from '@ui/index'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Download, Plus, ClipboardCheck } from 'lucide-react'
+import { Download, Plus} from 'lucide-react'
 import KanbanView from './KanbanView'
 import CalendarView from './CalendarView'
 import CreateEventSheet from '@/components/CreateEventSheet'
@@ -32,7 +32,6 @@ import type {
   AreaEvento,
   EquipamientoEvento,
 } from '../../types'
-import axios from 'axios'
 
 function normalizeJsonArray<T>(value: unknown): T[] {
   if (value == null) return []
@@ -101,35 +100,6 @@ export default function EventosPage() {
     setSelId(ev.id)
     setOpenDetail(true)
   }
-
-  const verificar = useMutation({
-    mutationFn: async (id: number) =>
-      (
-        await api.get<
-          Array<{ faltante: number; nombre_equipamiento: string }>
-        >(`/api/eventos/${id}/verificar-equipamiento`)
-      ).data,
-    onSuccess: (rows) => {
-      if (!rows?.length) {
-        toast.success('Sin requerimientos registrados')
-        return
-      }
-      const faltantes = rows.filter((r) => Number(r.faltante) > 0)
-      if (faltantes.length === 0) toast.success('Equipamiento suficiente')
-      else
-        toast.warning(
-          'Equipamiento insuficiente: ' +
-            faltantes.map((x) => x.nombre_equipamiento).join(', '),
-        )
-    },
-    onError: (err: unknown) =>
-      toast.error(
-        axios.isAxiosError(err)
-          ? (err.response?.data as { message?: string })?.message ??
-              'Error al verificar'
-          : 'Error al verificar',
-      ),
-  })
 
   async function descargarZip(id: number) {
     try {
@@ -359,7 +329,6 @@ export default function EventosPage() {
                   <TH>Áreas</TH>
                   <TH>Equipamiento</TH>
                   <TH className="text-center">Detalles</TH>
-                  <TH className="text-center">Verificar equipamiento</TH>
                   <TH className="text-center">Reconocimientos</TH>
                   <TH className="text-center">Semblanzas</TH>
                 </TR>
@@ -455,18 +424,6 @@ export default function EventosPage() {
                           onClick={() => openDetailSheet(e)}
                         >
                           Ver
-                        </Button>
-                      </TD>
-
-                      {/* Verificar equipamiento */}
-                      <TD className="text-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => verificar.mutate(e.id)}
-                          title="Verificar equipamiento"
-                        >
-                          <ClipboardCheck size={18} />
                         </Button>
                       </TD>
 
