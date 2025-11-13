@@ -32,6 +32,7 @@ public class EventoController {
   }
 
   @GetMapping
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public List<Map<String, Object>> list() {
     String sql = """
         SELECT
