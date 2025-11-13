@@ -42,3 +42,10 @@ psql -U postgres -d fca_auditorios -f 00_limpiar_esquema.sql
 ```psql
 psql -U postgres -d fca_auditorios -f 00_listar_triggers.sql
 ```
+
+## Exportar diccionario de datos
+Este script genera un archivo `.json` con los comentarios en el esquema public de la base de datos a modo de diccionario de datos.
+
+```psql
+psql -U postgres -d fca_auditorios -f 00_exportar_diccionario_de_datos.sql -o diccionario_datos_fca_auditorios.json
+```
