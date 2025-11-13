@@ -57,7 +57,7 @@ public class EventoController {
           e.id_mega_evento        AS "idMegaEvento",
           me.nombre               AS "nombreMegaEvento",
           CASE WHEN e.mega_evento IS TRUE
-              THEN 'Mega Evento'
+              THEN '[Mega Evento]'
               ELSE NULL
           END                     AS "isMegaEvento",
 

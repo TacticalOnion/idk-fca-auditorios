@@ -313,7 +313,6 @@ export default function EventosPage() {
                   <TH>Nombre</TH>
                   <TH>Categoría</TH>
                   <TH>Mega evento</TH>
-                  <TH>Tipo</TH>
                   <TH>Recinto</TH>
                   <TH>Fecha inicio</TH>
                   <TH>Fecha fin</TH>
@@ -350,10 +349,9 @@ export default function EventosPage() {
                           onChange={() => toggleSelectOne(e.id)}
                         />
                       </TD>
-                      <TD>{e.nombre}</TD>
+                      <TD>{e.nombre} <span className="font-medium">{e.isMegaEvento ?? ''}</span></TD>
                       <TD>{e.categoria ?? '-'}</TD>
                       <TD>{e.nombreMegaEvento ?? '-'}</TD>
-                      <TD>{e.isMegaEvento ?? ''}</TD>
                       <TD>{e.recinto ?? '-'}</TD>
                       <TD>{e.fechaInicio ?? '-'}</TD>
                       <TD>{e.fechaFin ?? '-'}</TD>
