@@ -19,7 +19,7 @@ public class AuditoriaController {
   public AuditoriaController(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
   @GetMapping
-  @PreAuthorize("hasRole('superadministrador')")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
   public List<Map<String, Object>> list() {
     return jdbc.queryForList("""
       select a.nombre_tabla, a.id_registro_afectado, a.accion, a.campo_modificado,

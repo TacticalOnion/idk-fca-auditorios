@@ -17,7 +17,7 @@ public class CalendarioController {
   }
 
   @GetMapping
-  @PreAuthorize("hasRole('superadministrador')")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
   public List<Map<String,Object>> list() {
     List<Map<String,Object>> out = new ArrayList<>();
     for (var c : calRepo.findAll()) {
@@ -33,7 +33,7 @@ public class CalendarioController {
   }
 
   @PostMapping
-  @PreAuthorize("hasRole('superadministrador')")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
   @Transactional
   public Map<String,Object> crear(@RequestBody Map<String,Object> body) {
     CalendarioEscolar c = new CalendarioEscolar();
