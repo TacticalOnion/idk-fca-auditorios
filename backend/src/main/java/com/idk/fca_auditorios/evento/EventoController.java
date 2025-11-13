@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.idk.fca_auditorios.evento.dto.EventoCreateRequest;
-import jakarta.validation.Valid;
 import java.util.Map;
 
 import java.util.ArrayList;
@@ -19,16 +17,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/eventos")
 public class EventoController {
-  private final EventoRepository repo;
   private final EventoService service;
   private final JdbcTemplate jdbc;
   private final PdfService pdfService;
   private final ZipService zipService;
 
-  public EventoController(EventoRepository repo, EventoService service,
+  public EventoController( EventoService service,
                           JdbcTemplate jdbc, PdfService pdfService, ZipService zipService) {
-    this.repo = repo; this.service = service;
-    this.jdbc = jdbc; this.pdfService = pdfService; this.zipService = zipService;
+    this.service = service;
+    this.jdbc = jdbc; 
+    this.pdfService = pdfService; this.zipService = zipService;
   }
 
   @GetMapping
@@ -275,23 +273,6 @@ public class EventoController {
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zip.getFilename())
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
         .body(zip);
-  }
-
-
-  @PostMapping("")
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
-  public Evento crear(@Valid @RequestBody EventoCreateRequest body) {
-    Evento e = new Evento();
-    e.setNombre(body.nombre());
-    e.setDescripcion(body.descripcion());
-    e.setFechaInicio(java.time.LocalDate.parse(body.fechaInicio()));
-    e.setFechaFin(java.time.LocalDate.parse(body.fechaFin()));
-    e.setHorarioInicio(java.time.LocalTime.parse(body.horarioInicio()));
-    e.setHorarioFin(java.time.LocalTime.parse(body.horarioFin()));
-    e.setPresencial(Boolean.TRUE.equals(body.presencial()));
-    e.setOnline(Boolean.TRUE.equals(body.online()));
-    e.setEstatus("pendiente");
-    return repo.save(e);
   }
 
   @GetMapping("/{id}/detalle")
