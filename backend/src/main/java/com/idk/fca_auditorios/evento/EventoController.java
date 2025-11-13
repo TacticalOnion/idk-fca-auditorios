@@ -180,6 +180,43 @@ public class EventoController {
       """, Long.class, idEvento);
   }
 
+  private String toSnakeCase(String input) {
+    if (input == null) return "";
+    String normalized = java.text.Normalizer.normalize(input, java.text.Normalizer.Form.NFD);
+    normalized = normalized.replaceAll("\\p{M}", "");
+    String snake = normalized.replaceAll("[^a-zA-Z0-9]+", "_");
+    snake = snake.replaceAll("_+", "_");
+    snake = snake.replaceAll("^_+", "").replaceAll("_+$", "");
+    return snake.toLowerCase();
+  }
+
+  private String buildReconocimientoFileName(Long idEvento, Long idPonente) {
+    String eventoNombre = jdbc.queryForObject(
+        "SELECT nombre FROM evento WHERE id_evento=?",
+        String.class,
+        idEvento
+    );
+
+    Map<String,Object> datos = jdbc.queryForMap(
+        "SELECT nombre, apellido_paterno, apellido_materno FROM ponente WHERE id_ponente = ?",
+        idPonente
+    );
+    String nombre = (String) datos.get("nombre");
+    String apP = (String) datos.get("apellido_paterno");
+    String apM = (String) datos.get("apellido_materno");
+
+    String basePonente = nombre
+        + (apP != null && !apP.isBlank() ? "_" + apP : "")
+        + (apM != null && !apM.isBlank() ? "_" + apM : "");
+
+    String eventoSnake = toSnakeCase(eventoNombre);
+    String ponenteSnake = toSnakeCase(basePonente);
+
+    // <nombre del evento>.<nombre>_<apellido_paterno>_<apellido_materno>.pdf
+    return eventoSnake + "." + ponenteSnake + ".pdf";
+  }
+
+
   @PostMapping("/{id}/descargar-reconocimientos")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   public ResponseEntity<Resource> descargarReconocimientos(@PathVariable Long id) throws Exception {
@@ -189,7 +226,7 @@ public class EventoController {
     }
     List<java.nio.file.Path> archivos = new ArrayList<>();
     for (Long idPonente : ponentes) {
-      String nombrePdf = "reconocimiento_evento_" + id + "_ponente_" + idPonente + ".pdf";
+      String nombrePdf = buildReconocimientoFileName(id, idPonente);
       archivos.add(pdfService.generarReconocimiento(idPonente, id, nombrePdf));
     }
     Resource zip = zipService.zip("reconocimientos_evento_" + id + ".zip", archivos);
@@ -197,6 +234,24 @@ public class EventoController {
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zip.getFilename())
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
         .body(zip);
+  }
+
+  private String buildSemblanzaFileName(Long idPonente) {
+    Map<String, Object> datos = jdbc.queryForMap(
+        "SELECT nombre, apellido_paterno, apellido_materno FROM ponente WHERE id_ponente = ?",
+        idPonente
+    );
+
+    String nombre = (String) datos.get("nombre");
+    String apP = (String) datos.get("apellido_paterno");
+    String apM = (String) datos.get("apellido_materno");
+
+    String base = nombre
+        + (apP != null && !apP.isBlank() ? "_" + apP : "")
+        + (apM != null && !apM.isBlank() ? "_" + apM : "");
+
+    // Regla: <nombre>_<apellido_paterno>_<apellido_materno>.pdf en snake_case
+    return toSnakeCase(base) + ".pdf";
   }
 
   @PostMapping("/{id}/descargar-semblanzas")
@@ -210,7 +265,7 @@ public class EventoController {
 
     List<java.nio.file.Path> archivos = new ArrayList<>();
     for (Long idPonente : ponentes) {
-      String nombrePdf = "semblanza_ponente_" + idPonente + ".pdf";
+      String nombrePdf = buildSemblanzaFileName(idPonente);
       archivos.add(pdfService.generarSemblanza(idPonente, nombrePdf));
     }
 
@@ -302,6 +357,5 @@ public class EventoController {
         "areas", areas
     );
   }
-
 
 }
