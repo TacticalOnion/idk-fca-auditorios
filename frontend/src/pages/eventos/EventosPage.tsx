@@ -333,14 +333,14 @@ export default function EventosPage() {
             <Table>
               <THead>
                 <TR>
-                  <TH>
+                  <TH className="sticky left-0 bg-white z-20">
                     <input
                       type="checkbox"
                       checked={allSelected}
                       onChange={toggleSelectAll}
                     />
                   </TH>
-                  <TH>Nombre</TH>
+                  <TH className="sticky left-6 bg-white z-10">Nombre</TH>
                   <TH>Categoría</TH>
                   <TH>Mega evento</TH>
                   <TH>Recinto</TH>
@@ -372,14 +372,16 @@ export default function EventosPage() {
 
                   return (
                     <TR key={e.id} className="align-top">
-                      <TD>
+                      <TD className="sticky left-0 bg-white z-20">
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleSelectOne(e.id)}
                         />
                       </TD>
-                      <TD>{e.nombre} <span className="font-medium">{e.isMegaEvento ?? ''}</span></TD>
+                      <TD className="sticky left-6 bg-white z-10">
+                        {e.nombre} <span className="font-medium">{e.isMegaEvento ?? ''}</span>
+                      </TD>
                       <TD>{e.categoria ?? '-'}</TD>
                       <TD>{e.nombreMegaEvento ?? '-'}</TD>
                       <TD>{e.recinto ?? '-'}</TD>
