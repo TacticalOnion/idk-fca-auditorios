@@ -1,3 +1,22 @@
+export type PonenteEvento = {
+  nombreCompleto: string
+  semblanza?: string | null
+  reconocimiento?: string | null
+}
+
+export type OrganizadorEvento = {
+  nombreCompleto: string
+}
+
+export type AreaEvento = {
+  area: string
+}
+
+export type EquipamientoEvento = {
+  equipamiento: string
+  cantidad: number
+}
+
 export type Evento = {
   id: number
   nombre: string
@@ -15,8 +34,22 @@ export type Evento = {
   idMegaEvento?: number
   idCategoria?: number
   idCalendarioEscolar?: number
+
+  // extras para TableView
+  fechaRegistro?: string
+  categoria?: string | null
+  nombreMegaEvento?: string | null    // nombre del mega evento (si aplica)
+  isMegaEvento?: string | null        // 'Mega Evento' o null
+  recinto?: string | null
+  calendarioEscolar?: string | null
+
+  ponentes?: PonenteEvento[]
+  organizadores?: OrganizadorEvento[]
+  areas?: AreaEvento[]
+  equipamiento?: EquipamientoEvento[]
 }
 
+// (deja el resto de tipos que ya tienes)
 export type Calendario = {
   id: number
   semestre: string
@@ -32,7 +65,6 @@ export type Periodo = {
   fechaFin: string
 }
 
-// Detalle de evento
 export type DetalleEvento = {
   evento: Record<string, unknown>
   organizadores: Organizador[]

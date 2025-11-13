@@ -46,10 +46,100 @@ public class EventoController {
           e.presencial      AS presencial,
           e.online          AS online,
           e.fecha_registro  AS fechaRegistro,
-          r.numero_registro AS numeroRegistro
+          r.numero_registro AS numeroRegistro,
+
+          -- categoría
+          e.id_categoria          AS idCategoria,
+          c.nombre                AS categoria,
+
+          -- mega evento
+          e.mega_evento           AS megaEvento,
+          e.id_mega_evento        AS idMegaEvento,
+          me.nombre               AS nombreMegaEvento,
+          CASE WHEN e.mega_evento IS TRUE
+              THEN 'Mega Evento'
+              ELSE NULL
+          END                     AS isMegaEvento,
+
+          -- calendario escolar
+          e.id_calendario_escolar AS idCalendarioEscolar,
+          ce.semestre             AS calendarioEscolar,
+
+          -- recinto principal (de la reservación)
+          rc.nombre               AS recinto,
+
+          -- ponentes
+          (
+            SELECT jsonb_agg(
+                    jsonb_build_object(
+                      'nombreCompleto',
+                      p.nombre || ' ' || p.apellido_paterno || ' ' || COALESCE(p.apellido_materno,''),
+                      'semblanza',
+                      s.archivo,
+                      'reconocimiento',
+                      pa.reconocimiento
+                    )
+                  )
+            FROM participacion pa
+            JOIN ponente p ON p.id_ponente = pa.id_ponente
+            LEFT JOIN semblanza s ON s.id_ponente = p.id_ponente
+            WHERE pa.id_evento = e.id_evento
+          ) AS ponentes,
+
+          -- organizadores
+          (
+            SELECT jsonb_agg(
+                    jsonb_build_object(
+                      'nombreCompleto',
+                      u.nombre || ' ' || u.apellido_paterno || ' ' || COALESCE(u.apellido_materno,'')
+                    )
+                  )
+            FROM evento_organizador eo
+            JOIN usuario u ON u.id_usuario = eo.id_usuario
+            WHERE eo.id_evento = e.id_evento
+          ) AS organizadores,
+
+          -- áreas
+          (
+            SELECT jsonb_agg(
+                    jsonb_build_object(
+                      'area', sub.nombre
+                    )
+                  )
+            FROM (
+              SELECT DISTINCT a.nombre
+              FROM evento_organizador eo
+              JOIN usuario u ON u.id_usuario = eo.id_usuario
+              JOIN puesto  p2 ON p2.id_puesto = u.id_puesto
+              JOIN area   a  ON a.id_area = p2.id_area
+              WHERE eo.id_evento = e.id_evento
+            ) AS sub
+          ) AS areas,
+
+          -- equipamiento
+          (
+            SELECT jsonb_agg(
+                    jsonb_build_object(
+                      'equipamiento', eq.nombre,
+                      'cantidad',    ex.cantidad
+                    )
+                  )
+            FROM eventoxequipamiento ex
+            JOIN equipamiento eq ON eq.id_equipamiento = ex.id_equipamiento
+            WHERE ex.id_evento = e.id_evento
+          ) AS equipamiento
+
         FROM evento e
         LEFT JOIN reservacion r
           ON r.id_evento = e.id_evento
+        LEFT JOIN recinto rc
+          ON rc.id_recinto = r.id_recinto
+        LEFT JOIN categoria c
+          ON c.id_categoria = e.id_categoria
+        LEFT JOIN calendario_escolar ce
+          ON ce.id_calendario_escolar = e.id_calendario_escolar
+        LEFT JOIN evento me
+          ON me.id_evento = e.id_mega_evento
         ORDER BY e.fecha_inicio DESC, e.horario_inicio
         """;
 
