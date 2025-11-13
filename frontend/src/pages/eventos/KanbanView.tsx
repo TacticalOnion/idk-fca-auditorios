@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState} from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -15,6 +15,7 @@ import {
 } from '@ui/index'
 import axios from 'axios'
 import { ClipboardCheck } from 'lucide-react'
+import EventDetailSheet from './EventDetailSheet'
 
 type KanbanViewProps = {
   data: Evento[]
@@ -27,6 +28,14 @@ type CancelarPayload = {
 
 export default function KanbanView({ data }: KanbanViewProps) {
   const queryClient = useQueryClient()
+
+  const [openDetail, setOpenDetail] = useState(false)
+  const [selId, setSelId] = useState<number | null>(null)
+
+  function openDetailSheet(ev: Evento) {
+    setSelId(ev.id)
+    setOpenDetail(true)
+  }
 
   const verificar = useMutation({
     mutationFn: async (id: number) =>
@@ -159,6 +168,13 @@ export default function KanbanView({ data }: KanbanViewProps) {
     if (evento.estatus === 'pendiente') {
       return (
         <>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => openDetailSheet(evento)}
+          >
+            Detalles
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -305,6 +321,19 @@ export default function KanbanView({ data }: KanbanViewProps) {
           </div>
         )
       })}
+      {/* Detalle como Sheet controlado */}
+      {selId !== null && (
+        <EventDetailSheet
+          id={selId}
+          open={openDetail}
+          onOpenChange={(isOpen) => {
+            setOpenDetail(isOpen)
+            if (!isOpen) {
+              setSelId(null)
+            }
+          }}
+        />
+      )}
     </div>
   )
 }
