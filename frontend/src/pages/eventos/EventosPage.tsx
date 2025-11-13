@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery} from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import {
   Button,
@@ -20,10 +20,9 @@ import {
 } from '@ui/index'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Download, Plus} from 'lucide-react'
+import { Download} from 'lucide-react'
 import KanbanView from './KanbanView'
 import CalendarView from './CalendarView'
-import CreateEventSheet from '@/components/CreateEventSheet'
 import EventDetailSheet from './EventDetailSheet'
 import type {
   Evento,
@@ -32,6 +31,9 @@ import type {
   AreaEvento,
   EquipamientoEvento,
 } from '../../types'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 function normalizeJsonArray<T>(value: unknown): T[] {
   if (value == null) return []
@@ -74,7 +76,6 @@ function normalizeJsonArray<T>(value: unknown): T[] {
 }
 
 export default function EventosPage() {
-  const qc = useQueryClient()
   const { data } = useQuery({
     queryKey: ['eventos'],
     queryFn: async () => (await api.get<Evento[]>('/api/eventos')).data,
@@ -83,7 +84,6 @@ export default function EventosPage() {
   const [estatus, setEstatus] = useState<string>('')
   const [openDetail, setOpenDetail] = useState(false)
   const [selId, setSelId] = useState<number | null>(null)
-  const [openCreate, setOpenCreate] = useState(false)
 
   // selección múltiple para CSV
   const [selectedIds, setSelectedIds] = useState<number[]>([])
@@ -131,6 +131,7 @@ export default function EventosPage() {
   }
 
   // --------- selección / CSV ----------
+    // --------- selección / exportaciones ----------
 
   const allSelected =
     filtered.length > 0 &&
@@ -150,106 +151,133 @@ export default function EventosPage() {
     )
   }
 
-  function toCsvValue(v: unknown): string {
-    const s = v == null ? '' : String(v)
-    const escaped = s.replace(/"/g, '""')
-    return `"${escaped}"`
+  // Encabezados de exportación
+  const exportHeader = [
+    'nombre',
+    'categoria',
+    'megaEvento',
+    'isMegaEvento',
+    'recinto',
+    'fechaInicio',
+    'fechaFin',
+    'horarioInicio',
+    'horarioFin',
+    'presencial',
+    'online',
+    'estatus',
+    'descripcion',
+    'motivo',
+    'fechaRegistro',
+    'numeroRegistro',
+    'calendarioEscolar',
+    'ponentes',
+    'organizadores',
+    'areas',
+    'equipamiento',
+  ]
+
+  function buildExportRow(e: Evento): string[] {
+    const ponentes = normalizeJsonArray<PonenteEvento>(e.ponentes)
+      .map((p) => p.nombreCompleto)
+      .join(' | ')
+
+    const organizadores = normalizeJsonArray<OrganizadorEvento>(
+      e.organizadores,
+    )
+      .map((o) => o.nombreCompleto)
+      .join(' | ')
+
+    const areas = normalizeJsonArray<AreaEvento>(e.areas)
+      .map((a) => a.area)
+      .join(' | ')
+
+    const equipamiento = normalizeJsonArray<EquipamientoEvento>(e.equipamiento)
+      .map((eq) => `${eq.cantidad} x ${eq.equipamiento}`)
+      .join(' | ')
+
+    return [
+      e.nombre ?? '',
+      e.categoria ?? '',
+      e.nombreMegaEvento ?? '',
+      (e.isMegaEvento ?? '').toString(),
+      e.recinto ?? '',
+      e.fechaInicio ?? '',
+      e.fechaFin ?? '',
+      e.horarioInicio ?? '',
+      e.horarioFin ?? '',
+      e.presencial ? 'Sí' : 'No',
+      e.online ? 'Sí' : 'No',
+      e.estatus ?? '',
+      e.descripcion ?? '',
+      e.motivo ?? '',
+      e.fechaRegistro ?? '',
+      e.numeroRegistro ?? '',
+      e.calendarioEscolar ?? '',
+      ponentes,
+      organizadores,
+      areas,
+      equipamiento,
+    ]
   }
 
-  function downloadSelectedCsv() {
+  function getSelectedEvents(): Evento[] | null {
     const selectedEvents = (data || []).filter((e) =>
       selectedIds.includes(e.id),
     )
     if (!selectedEvents.length) {
       toast.error('No hay eventos seleccionados')
-      return
+      return null
     }
+    return selectedEvents
+  }
 
-    const header = [
-      'nombre',
-      'categoria',
-      'megaEvento',
-      'isMegaEvento',
-      'recinto',
-      'fechaInicio',
-      'fechaFin',
-      'horarioInicio',
-      'horarioFin',
-      'presencial',
-      'online',
-      'estatus',
-      'descripcion',
-      'motivo',
-      'fechaRegistro',
-      'numeroRegistro',
-      'calendarioEscolar',
-      'ponentes',
-      'organizadores',
-      'areas',
-      'equipamiento',
-    ]
+  function downloadSelectedXls() {
+    const selectedEvents = getSelectedEvents()
+    if (!selectedEvents) return
 
-    const lines: string[] = []
-    lines.push(header.map(toCsvValue).join(','))
+    const rows = selectedEvents.map(buildExportRow)
+    const aoa = [exportHeader, ...rows]
 
-    selectedEvents.forEach((e) => {
-      const ponentes = normalizeJsonArray<PonenteEvento>(e.ponentes)
-        .map((p) => p.nombreCompleto)
-        .join(' | ')
+    const worksheet = XLSX.utils.aoa_to_sheet(aoa)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Eventos')
 
-      const organizadores = normalizeJsonArray<OrganizadorEvento>(
-        e.organizadores,
-      )
-        .map((o) => o.nombreCompleto)
-        .join(' | ')
+    XLSX.writeFile(workbook, 'reporte_eventos.xlsx')
+  }
 
-      const areas = normalizeJsonArray<AreaEvento>(e.areas)
-        .map((a) => a.area)
-        .join(' | ')
+  function downloadSelectedPdf() {
+    const selectedEvents = getSelectedEvents()
+    if (!selectedEvents) return
 
-      const equipamiento = normalizeJsonArray<EquipamientoEvento>(
-        e.equipamiento,
-      )
-        .map((eq) => `${eq.cantidad} x ${eq.equipamiento}`)
-        .join(' | ')
+    const rows = selectedEvents.map(buildExportRow)
 
-      const row = [
-        e.nombre,
-        e.categoria ?? '',
-        e.nombreMegaEvento ?? '',
-        e.isMegaEvento ?? '',
-        e.recinto ?? '',
-        e.fechaInicio ?? '',
-        e.fechaFin ?? '',
-        e.horarioInicio ?? '',
-        e.horarioFin ?? '',
-        e.presencial ? 'Sí' : 'No',
-        e.online ? 'Sí' : 'No',
-        e.estatus ?? '',
-        e.descripcion ?? '',
-        e.motivo ?? '',
-        e.fechaRegistro ?? '',
-        e.numeroRegistro ?? '',
-        e.calendarioEscolar ?? '',
-        ponentes,
-        organizadores,
-        areas,
-        equipamiento,
-      ]
+    const doc = new jsPDF({ orientation: 'landscape' })
 
-      lines.push(row.map(toCsvValue).join(','))
+    autoTable(doc, {
+      head: [exportHeader],
+      body: rows,
+      styles: {
+        fontSize: 6,
+        textColor: [0, 0, 0],      // texto negro
+        lineColor: [0, 0, 0],      // líneas negras
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fillColor: false,          // sin fondo
+        textColor: [0, 0, 0],
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: {
+        fillColor: false,          // sin gris alternado
+      },
+      tableLineColor: [0, 0, 0],    // borde exterior negro
+      tableLineWidth: 0.15,
+      margin: { top: 10 },
     })
 
-    const csv = lines.join('\n')
-    const blob = new Blob([csv], {
-      type: 'text/csv;charset=utf-8;',
-    })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'eventos_seleccionados.csv'
-    a.click()
-    URL.revokeObjectURL(url)
+    doc.save('reporte_eventos.pdf')
   }
 
   return (
@@ -273,19 +301,23 @@ export default function EventosPage() {
             <option value="cancelado">Cancelado</option>
             <option value="realizado">Realizado</option>
           </select>
-
-          {/* botón CSV activable solo con selección */}
+          {/* botones de exportación activables solo con selección */}
           <Button
             variant="outline"
             disabled={selectedIds.length === 0}
-            onClick={downloadSelectedCsv}
+            onClick={downloadSelectedXls}
           >
             <Download size={16} className="mr-2" />
-            Exportar CSV
+            Exportar XLS
           </Button>
 
-          <Button onClick={() => setOpenCreate(true)}>
-            <Plus size={16} className="mr-2" /> Nuevo
+          <Button
+            variant="outline"
+            disabled={selectedIds.length === 0}
+            onClick={downloadSelectedPdf}
+          >
+            <Download size={16} className="mr-2" />
+            Exportar PDF
           </Button>
         </div>
       </CardHeader>
@@ -480,16 +512,6 @@ export default function EventosPage() {
         />
       )}
 
-      {/* Alta */}
-      {openCreate && (
-        <CreateEventSheet
-          onClose={() => setOpenCreate(false)}
-          onCreated={() => {
-            setOpenCreate(false)
-            qc.invalidateQueries({ queryKey: ['eventos'] })
-          }}
-        />
-      )}
     </Card>
   )
 }
