@@ -223,7 +223,7 @@ export default function CalendarioPage() {
 
       {/* Sheet para nuevo calendario */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent className="sm:max-w-xl overflow-y-auto">
+        <SheetContent className="overflow-y-auto p-6 sm:p-8 sm:max-w-xl">
           <SheetHeader>
             <SheetTitle className='rounded-md bg-primary text-white text-center text-2xl p-3'>Nuevo calendario</SheetTitle>
           </SheetHeader>
