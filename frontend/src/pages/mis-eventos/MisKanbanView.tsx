@@ -13,10 +13,16 @@ import {
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import EventDetailSheet from '@/pages/eventos/EventDetailSheet'
+import { CancelEventPopover } from '../eventos/CancelEventPopover'
 
 type MisKanbanViewProps = {
   data: Evento[]
   onEdit: (evento: Evento) => void
+}
+
+type CancelarPayload = {
+  id: number
+  motivo: string
 }
 
 export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
@@ -75,9 +81,14 @@ export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
     }
   }
 
-  const cancelarEvento = useMutation({
-    mutationFn: async (idEvento: number) => {
-      await api.post(`/api/eventos/${idEvento}/cancelar`)
+  // --- Mutations ---
+
+  // Cancelar con motivo (igual idea que en KanbanView)
+  const cancelar = useMutation({
+    mutationFn: async ({ id, motivo }: CancelarPayload) => {
+      await api.post(`/api/eventos/${id}/cancelar`, null, {
+        params: { motivo },
+      })
     },
     onSuccess: () => {
       toast.success('Evento cancelado correctamente')
@@ -92,9 +103,29 @@ export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
     },
   })
 
-  const handleCancelarClick = (evento: Evento) => {
-    if (evento.estatus === 'cancelado') return
-    cancelarEvento.mutate(evento.id)
+  // Deshacer: regresa a pendiente y pone motivo = NULL (backend se encarga)
+  const deshacer = useMutation({
+    mutationFn: async (idEvento: number) => {
+      await api.post(`/api/eventos/${idEvento}/deshacer`)
+    },
+    onSuccess: () => {
+      toast.success('Cambios revertidos. El evento regresó a pendiente.')
+      queryClient.invalidateQueries({ queryKey: ['mis-eventos'] })
+      queryClient.invalidateQueries({ queryKey: ['eventos'] })
+    },
+    onError: (error: unknown) => {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? 'No se pudo deshacer el cambio'
+      toast.error('Error al deshacer el cambio', { description: message })
+    },
+  })
+
+  const handleDeshacerClick = (evento: Evento) => {
+    if (evento.estatus !== 'cancelado' && evento.estatus !== 'autorizado') {
+      return
+    }
+    deshacer.mutate(evento.id)
   }
 
   return (
@@ -146,7 +177,7 @@ export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
                   </CardContent>
 
                   <CardFooter className="flex gap-2 pt-2">
-                    {/* Botón Detalles */}
+                    {/* Detalles */}
                     <Button
                       variant="outline"
                       size="sm"
@@ -155,7 +186,7 @@ export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
                       Detalles
                     </Button>
 
-                    {/* Botón Editar (nuevo) */}
+                    {/* Editar */}
                     <Button
                       size="sm"
                       variant="ghost"
@@ -164,18 +195,28 @@ export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
                       Editar
                     </Button>
 
-                    {/* Botón Cancelar */}
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      disabled={
-                        evento.estatus === 'cancelado' ||
-                        cancelarEvento.isPending
-                      }
-                      onClick={() => handleCancelarClick(evento)}
-                    >
-                      {evento.estatus === 'cancelado' ? 'Cancelado' : 'Cancelar'}
-                    </Button>
+                    {/* Cancelar / Deshacer según estatus */}
+                    {evento.estatus === 'pendiente' && (
+                      <CancelEventPopover
+                        disabled={cancelar.isPending}
+                        onConfirm={(motivo) => cancelar.mutate({ id: evento.id, motivo })}
+                      >
+                        <Button size="sm" variant="destructive">
+                          Cancelar
+                        </Button>
+                      </CancelEventPopover>
+                    )}
+
+                    {evento.estatus === 'cancelado' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={deshacer.isPending}
+                        onClick={() => handleDeshacerClick(evento)}
+                      >
+                        Deshacer
+                      </Button>
+                    )}
                   </CardFooter>
                 </Card>
               ))}
@@ -191,18 +232,18 @@ export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
       })}
 
       {/* Sheet de detalle compartido con admin */}
-        {selId !== null && (
-          <EventDetailSheet
-            id={selId}
-            open={openDetail}
-            onOpenChange={(isOpen) => {
-              setOpenDetail(isOpen)
-              if (!isOpen) {
-                setSelId(null)
-              }
-            }}
-            basePath="/api/mis-eventos"
-          />
+      {selId !== null && (
+        <EventDetailSheet
+          id={selId}
+          open={openDetail}
+          onOpenChange={(isOpen) => {
+            setOpenDetail(isOpen)
+            if (!isOpen) {
+              setSelId(null)
+            }
+          }}
+          basePath="/api/mis-eventos"
+        />
       )}
     </div>
   )

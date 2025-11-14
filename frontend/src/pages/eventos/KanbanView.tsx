@@ -16,6 +16,7 @@ import {
 import axios from 'axios'
 import { ClipboardCheck } from 'lucide-react'
 import EventDetailSheet from './EventDetailSheet'
+import { CancelEventPopover } from '../eventos/CancelEventPopover'
 
 type KanbanViewProps = {
   data: Evento[]
@@ -149,17 +150,6 @@ export default function KanbanView({ data }: KanbanViewProps) {
     autorizar.mutate(id)
   }
 
-  const handleCancelar = (id: number) => {
-    const motivo = window.prompt('Indica el motivo de cancelación')
-
-    if (!motivo || !motivo.trim()) {
-      toast.error('Debes indicar un motivo para cancelar el evento.')
-      return
-    }
-
-    cancelar.mutate({ id, motivo: motivo.trim() })
-  }
-
   const handleDeshacer = (id: number) => {
     deshacer.mutate(id)
   }
@@ -191,14 +181,14 @@ export default function KanbanView({ data }: KanbanViewProps) {
           >
             Autorizar
           </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => handleCancelar(evento.id)}
+          <CancelEventPopover
             disabled={cancelar.isPending}
+            onConfirm={(motivo) => cancelar.mutate({ id: evento.id, motivo })}
           >
-            Cancelar
-          </Button>
+            <Button size="sm" variant="destructive">
+              Cancelar
+            </Button>
+          </CancelEventPopover>
         </>
       )
     }
