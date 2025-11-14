@@ -32,7 +32,7 @@ public class UsuarioController {
   }
 
   @GetMapping
-  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('SUPERADMINISTRADOR','ADMINISTRADOR')")
   public List<Usuario> listAll() {
     return repo.findAll();
   }
@@ -142,7 +142,7 @@ public class UsuarioController {
   }
 
   @GetMapping("/catalogos")
-  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('SUPERADMINISTRADOR','ADMINISTRADOR')")
   public Map<String, Object> catalogos() {
     // Lista de roles
     List<Map<String, Object>> roles = jdbc.queryForList(
