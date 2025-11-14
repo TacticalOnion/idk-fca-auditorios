@@ -49,11 +49,70 @@ export type PonenteFormValue = {
   reconocimientos: ReconocimientoForm[]
   experiencia: ExperienciaForm[]
   grados: GradoForm[]
+  /**
+   * Controla si los campos del ponente son editables en el formulario.
+   * - Nuevos ponentes -> true
+   * - Ponentes importados desde BD -> false (se puede activar con un checkbox)
+   */
+  editable?: boolean
 }
 
 type Option = {
   id: number
   nombre: string
+}
+
+// Resultado de /api/ponentes/search
+type PonenteSearchItem = {
+  id_ponente: number
+  nombre: string
+  apellido_paterno: string
+  apellido_materno?: string | null
+  pais?: string | null
+}
+
+type ReconocimientoBackend = {
+  id_semblanza?: number | null
+  id_reconocimiento?: number | null
+  titulo?: string | null
+  organizacion?: string | null
+  anio?: number | string | null
+  descripcion?: string | null
+}
+
+type ExperienciaBackend = {
+  id_semblanza?: number | null
+  id_experiencia?: number | null
+  puesto?: string | null
+  puesto_actual?: boolean | null
+  fecha_inicio?: string | null
+  fecha_fin?: string | null
+  id_empresa?: number | null
+  id_pais?: number | null
+}
+
+type GradoBackend = {
+  id_semblanza?: number | null
+  id_grado?: number | null
+  titulo?: string | null
+  id_nivel?: number | null
+  id_institucion?: number | null
+  id_pais?: number | null
+}
+
+// Respuesta de /api/ponentes/{id}
+type PonenteFullResponse = {
+  ponente: {
+    id_ponente: number
+    nombre: string
+    apellido_paterno: string
+    apellido_materno?: string | null
+    id_pais?: number | null
+  }
+  semblanza: { id_semblanza: number; texto: string }[]
+  reconocimientos: ReconocimientoBackend[]
+  experiencia: ExperienciaBackend[]
+  grados: GradoBackend[]
 }
 
 type PonentesFormProps = {
@@ -64,7 +123,9 @@ type PonentesFormProps = {
 export default function PonentesForm({ value, onChange }: PonentesFormProps) {
   const queryClient = useQueryClient()
 
-  // Catálogos
+  // --------------------------------------------------------
+  // Catálogos (todos desde /api/catalogos/*)
+  // --------------------------------------------------------
   const { data: paises } = useQuery({
     queryKey: ['catalogo-paises'],
     queryFn: async () =>
@@ -89,7 +150,10 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
       (await api.get<Option[]>('/api/catalogos/instituciones')).data,
   })
 
+  // --------------------------------------------------------
   // Mutaciones para crear empresa / institución nuevas
+  // (POST sigue yendo a /api/empresas y /api/instituciones)
+  // --------------------------------------------------------
   const crearEmpresa = useMutation({
     mutationFn: async (payload: { nombre: string; idPais: number }) =>
       (await api.post<Option>('/api/empresas', payload)).data,
@@ -112,63 +176,97 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
 
   const ponentes = useMemo(() => value || [], [value])
 
-  // Helpers inmutables
-  const updatePonente = (index: number, patch: Partial<PonenteFormValue>) => {
-    const next = [...ponentes]
-    next[index] = { ...next[index], ...patch }
-    onChange(next)
-  }
+  // --------------------------------------------------------
+  // Búsqueda de ponentes existentes
+  // --------------------------------------------------------
+  const [searchText, setSearchText] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const updateReconocimiento = (
-    iPonente: number,
-    iRec: number,
-    patch: Partial<ReconocimientoForm>,
-  ) => {
-    const next = [...ponentes]
-    const recs = [...(next[iPonente].reconocimientos || [])]
-    recs[iRec] = { ...recs[iRec], ...patch }
-    next[iPonente].reconocimientos = recs
-    onChange(next)
-  }
+  const {
+    data: searchResults,
+    isFetching: searching,
+  } = useQuery({
+    queryKey: ['buscar-ponentes', searchTerm],
+    enabled: searchTerm.trim().length >= 3,
+    queryFn: async () => {
+      const res = await api.get<PonenteSearchItem[]>('/api/ponentes/search', {
+        params: { q: searchTerm.trim() },
+      })
+      return res.data
+    },
+  })
 
-  const updateExperiencia = (
-    iPonente: number,
-    iExp: number,
-    patch: Partial<ExperienciaForm>,
-  ) => {
-    const next = [...ponentes]
-    const exps = [...(next[iPonente].experiencia || [])]
-
-    // Regla: solo un puestoActual = true por ponente
-    if (patch.puestoActual === true) {
-      const updatedExps = exps.map((exp, idx) => ({
-        ...exp,
-        puestoActual: idx === iExp,
-        // si es el actual, no permitimos editar fechaFin (backend pondrá la fecha actual)
-        fechaFin: idx === iExp ? '' : exp.fechaFin,
-      }))
-      next[iPonente].experiencia = updatedExps
-    } else {
-      exps[iExp] = { ...exps[iExp], ...patch }
-      next[iPonente].experiencia = exps
+  const handleBuscarPonentes = () => {
+    if (searchText.trim().length < 3) {
+      toast.error('Escribe al menos 3 caracteres para buscar ponentes')
+      return
     }
-
-    onChange(next)
+    setSearchTerm(searchText)
   }
 
-  const updateGrado = (
-    iPonente: number,
-    iGrado: number,
-    patch: Partial<GradoForm>,
-  ) => {
-    const next = [...ponentes]
-    const grados = [...(next[iPonente].grados || [])]
-    grados[iGrado] = { ...grados[iGrado], ...patch }
-    next[iPonente].grados = grados
-    onChange(next)
+  const handleImportarPonente = async (item: PonenteSearchItem) => {
+    try {
+      const idPonente = item.id_ponente
+
+      // Evitar duplicados por id
+      if (ponentes.some((p) => p.id === idPonente)) {
+        toast.error('Este ponente ya está agregado al evento')
+        return
+      }
+
+      const res = await api.get<PonenteFullResponse>(`/api/ponentes/${idPonente}`)
+      const data = res.data
+
+      const baseSemblanza =
+        Array.isArray(data.semblanza) && data.semblanza.length > 0
+          ? data.semblanza[0]
+          : null
+
+      const nuevo: PonenteFormValue = {
+        id: data.ponente.id_ponente,
+        nombre: data.ponente.nombre,
+        apellidoPaterno: data.ponente.apellido_paterno,
+        apellidoMaterno: data.ponente.apellido_materno ?? '',
+        idPais: data.ponente.id_pais ?? null,
+        semblanza: baseSemblanza?.texto ?? '',
+        reconocimientos: (data.reconocimientos || []).map((r) => ({
+          idSemblanza: r.id_semblanza ?? baseSemblanza?.id_semblanza ?? null,
+          idReconocimiento: r.id_reconocimiento ?? null,
+          titulo: r.titulo ?? '',
+          organizacion: r.organizacion ?? '',
+          anio: r.anio != null ? String(r.anio) : '',
+          descripcion: r.descripcion ?? '',
+        })),
+        experiencia: (data.experiencia || []).map((e) => ({
+          idSemblanza: e.id_semblanza ?? baseSemblanza?.id_semblanza ?? null,
+          idExperiencia: e.id_experiencia ?? null,
+          puesto: e.puesto ?? '',
+          puestoActual: Boolean(e.puesto_actual),
+          fechaInicio: e.fecha_inicio ?? '',
+          fechaFin: e.fecha_fin ?? '',
+          idEmpresa: e.id_empresa ?? null,
+          idPais: e.id_pais ?? null,
+        })),
+        grados: (data.grados || []).map((g) => ({
+          idSemblanza: g.id_semblanza ?? baseSemblanza?.id_semblanza ?? null,
+          idGrado: g.id_grado ?? null,
+          titulo: g.titulo ?? '',
+          idNivel: g.id_nivel ?? null,
+          idInstitucion: g.id_institucion ?? null,
+          idPais: g.id_pais ?? null,
+        })),
+        editable: false, // Importado: por defecto bloqueado
+      }
+
+      onChange([...ponentes, nuevo])
+      toast.success('Ponente importado al evento')
+    } catch (err) {
+      console.error(err)
+      toast.error('No se pudo importar el ponente')
+    }
   }
 
-  // Add/remove
+  // Helpers para manejar arrays
   const addPonente = () => {
     const next: PonenteFormValue[] = [
       ...ponentes,
@@ -181,6 +279,7 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
         reconocimientos: [],
         experiencia: [],
         grados: [],
+        editable: true,
       },
     ]
     onChange(next)
@@ -188,6 +287,15 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
 
   const removePonente = (index: number) => {
     const next = ponentes.filter((_, i) => i !== index)
+    onChange(next)
+  }
+
+  const updatePonente = (
+    index: number,
+    partial: Partial<PonenteFormValue>,
+  ) => {
+    const next = [...ponentes]
+    next[index] = { ...next[index], ...partial }
     onChange(next)
   }
 
@@ -209,6 +317,19 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
     next[iPonente].reconocimientos = next[iPonente].reconocimientos.filter(
       (_, i) => i !== iRec,
     )
+    onChange(next)
+  }
+
+  const updateReconocimiento = (
+    iPonente: number,
+    iRec: number,
+    partial: Partial<ReconocimientoForm>,
+  ) => {
+    const next = [...ponentes]
+    next[iPonente].reconocimientos[iRec] = {
+      ...next[iPonente].reconocimientos[iRec],
+      ...partial,
+    }
     onChange(next)
   }
 
@@ -235,6 +356,19 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
     onChange(next)
   }
 
+  const updateExperiencia = (
+    iPonente: number,
+    iExp: number,
+    partial: Partial<ExperienciaForm>,
+  ) => {
+    const next = [...ponentes]
+    next[iPonente].experiencia[iExp] = {
+      ...next[iPonente].experiencia[iExp],
+      ...partial,
+    }
+    onChange(next)
+  }
+
   const addGrado = (iPonente: number) => {
     const next = [...ponentes]
     const grados = [...(next[iPonente].grados || [])]
@@ -256,7 +390,20 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
     onChange(next)
   }
 
-  // Helpers para forms rápidos de empresa / institución
+  const updateGrado = (
+    iPonente: number,
+    iGrado: number,
+    partial: Partial<GradoForm>,
+  ) => {
+    const next = [...ponentes]
+    next[iPonente].grados[iGrado] = {
+      ...next[iPonente].grados[iGrado],
+      ...partial,
+    }
+    onChange(next)
+  }
+
+  // Helpers para crear empresa / institución desde el formulario
   const handleCrearEmpresa = async (
     iPonente: number,
     iExp: number,
@@ -291,8 +438,12 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
     updateGrado(iPonente, iGrado, { idInstitucion: created.id })
   }
 
+  // --------------------------------------------------------
+  // Render
+  // --------------------------------------------------------
   return (
     <div className="space-y-4">
+      {/* Header principal + botón agregar */}
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold">Ponentes</h3>
         <Button
@@ -305,483 +456,501 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
       </div>
       <Separator />
 
+      {/* 🔍 Búsqueda de ponentes existentes */}
+      <section className="space-y-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <div className="text-sm font-semibold">Buscar ponentes existentes</div>
+            <p className="text-[11px] text-slate-500">
+              Reutiliza ponentes ya registrados. Escribe al menos 3 caracteres y
+              luego haz clic en &quot;Buscar&quot;.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 md:flex-row">
+          <Input
+            placeholder="Buscar por nombre o apellidos..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <Button
+            type="button"
+            onClick={handleBuscarPonentes}
+            disabled={searching}
+          >
+            {searching ? 'Buscando...' : 'Buscar'}
+          </Button>
+        </div>
+
+        {searchTerm && (
+          <div className="mt-2 space-y-1 max-h-52 overflow-y-auto">
+            {searching && (
+              <p className="text-xs text-slate-500">Buscando ponentes...</p>
+            )}
+            {!searching && (searchResults || []).length === 0 && (
+              <p className="text-xs text-slate-500">
+                No se encontraron ponentes para &quot;{searchTerm}&quot;.
+              </p>
+            )}
+            {(searchResults || []).map((item) => (
+              <div
+                key={item.id_ponente}
+                className="flex items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-2 py-1"
+              >
+                <div className="text-xs">
+                  <div className="font-medium">
+                    {item.nombre} {item.apellido_paterno} {item.apellido_materno}
+                  </div>
+                  {item.pais && (
+                    <div className="text-[11px] text-slate-500">
+                      País: {item.pais}
+                    </div>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleImportarPonente(item)}
+                >
+                  Importar
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
       {ponentes.length === 0 && (
         <p className="text-xs text-slate-500">
-          Aún no has agregado ponentes. Usa el botón &quot;Agregar ponente&quot;.
+          Aún no has agregado ponentes. Puedes crearlos manualmente o importarlos
+          desde los existentes.
         </p>
       )}
 
       {ponentes.map((p, iPonente) => (
         <div
           key={iPonente}
-          className="rounded-lg border border-slate-200 p-4 space-y-4"
+          className="rounded-md border border-slate-200 p-3 space-y-3"
         >
-          {/* Header ponente */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2 flex-1">
-              <div className="grid md:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-medium">
-                    Nombre
-                  </label>
-                  <Input
-                    value={p.nombre}
-                    onChange={(e) =>
-                      updatePonente(iPonente, { nombre: e.target.value })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium">
-                    Apellido paterno
-                  </label>
-                  <Input
-                    value={p.apellidoPaterno}
-                    onChange={(e) =>
-                      updatePonente(iPonente, {
-                        apellidoPaterno: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium">
-                    Apellido materno
-                  </label>
-                  <Input
-                    value={p.apellidoMaterno}
-                    onChange={(e) =>
-                      updatePonente(iPonente, {
-                        apellidoMaterno: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium">
-                    País del ponente
-                  </label>
-                  <select
-                    className="border rounded-md px-2 py-2 w-full text-sm"
-                    value={p.idPais ?? ''}
-                    onChange={(e) =>
-                      updatePonente(iPonente, {
-                        idPais: e.target.value
-                          ? Number(e.target.value)
-                          : null,
-                      })
-                    }
-                  >
-                    <option value="">Selecciona un país</option>
-                    {(paises || []).map((pais) => (
-                      <option key={pais.id} value={pais.id}>
-                        {pais.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm font-semibold">
+              Ponente {iPonente + 1}{' '}
+              {p.nombre && (
+                <span className="font-normal text-slate-600">
+                  - {p.nombre} {p.apellidoPaterno} {p.apellidoMaterno}
+                </span>
+              )}
             </div>
-
-            <div className="flex flex-col items-end gap-2">
-              <Badge variant="outline">
-                Ponente #{iPonente + 1}
-              </Badge>
+            <div className="flex items-center gap-2">
+              {p.id && (
+                <Badge variant="outline" className="text-[11px]">
+                  Importado
+                </Badge>
+              )}
+              <label className="flex items-center gap-1 text-[11px] text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={p.editable ?? !p.id}
+                  onChange={(e) =>
+                    updatePonente(iPonente, { editable: e.target.checked })
+                  }
+                />
+                Editable
+              </label>
               <Button
                 type="button"
-                size="icon"
-                variant="ghost"
+                variant="outline"
                 onClick={() => removePonente(iPonente)}
               >
-                ✕
+                Quitar
               </Button>
             </div>
           </div>
 
-          {/* Semblanza */}
-          <div className="space-y-2">
-            <label className="block text-xs font-medium">
-              Semblanza
-            </label>
+          {/* Datos básicos del ponente */}
+          <div className="grid md:grid-cols-3 gap-2">
+            <div>
+              <label className="block text-xs font-medium">Nombre</label>
+              <Input
+                value={p.nombre}
+                disabled={p.editable === false}
+                onChange={(e) =>
+                  updatePonente(iPonente, { nombre: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium">
+                Apellido paterno
+              </label>
+              <Input
+                value={p.apellidoPaterno}
+                disabled={p.editable === false}
+                onChange={(e) =>
+                  updatePonente(iPonente, { apellidoPaterno: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium">
+                Apellido materno
+              </label>
+              <Input
+                value={p.apellidoMaterno}
+                disabled={p.editable === false}
+                onChange={(e) =>
+                  updatePonente(iPonente, { apellidoMaterno: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-medium">País</label>
+              <select
+                className="border rounded-md px-2 py-1 text-xs w-full"
+                value={p.idPais ?? ''}
+                disabled={p.editable === false}
+                onChange={(e) =>
+                  updatePonente(iPonente, {
+                    idPais: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+              >
+                <option value="">Selecciona un país</option>
+                {(paises || []).map((pais) => (
+                  <option key={pais.id} value={pais.id}>
+                    {pais.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium">Semblanza</label>
             <Textarea
-              className="min-h-20"
               value={p.semblanza}
+              disabled={p.editable === false}
               onChange={(e) =>
                 updatePonente(iPonente, { semblanza: e.target.value })
               }
-              placeholder="Resumen profesional y biográfico del ponente..."
+              className="text-xs"
             />
-            <p className="text-[11px] text-slate-500">
-              A partir de esta semblanza, el backend puede generar o asociar
-              la <code>idSemblanza</code> y relacionarla con reconocimientos,
-              experiencia y grados.
-            </p>
           </div>
 
-          <Separator />
-
           {/* Reconocimientos */}
-          <section className="space-y-3">
+          <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="text-sm font-semibold">Reconocimientos</h4>
+              <div className="text-xs font-semibold">Reconocimientos</div>
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
+                disabled={p.editable === false}
                 onClick={() => addReconocimiento(iPonente)}
               >
                 Agregar reconocimiento
               </Button>
             </div>
-
-            {p.reconocimientos.length === 0 && (
+            {(p.reconocimientos || []).length === 0 && (
               <p className="text-[11px] text-slate-500">
-                No hay reconocimientos agregados.
+                Sin reconocimientos capturados.
               </p>
             )}
-
-            {p.reconocimientos.map((rec, iRec) => (
+            {(p.reconocimientos || []).map((r, iRec) => (
               <div
                 key={iRec}
-                className="rounded-md border border-slate-200 p-3 space-y-2"
+                className="grid md:grid-cols-4 gap-2 rounded-md border border-slate-200 p-2"
               >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium">
-                    Reconocimiento #{iRec + 1}
-                  </span>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    onClick={() =>
-                      removeReconocimiento(iPonente, iRec)
+                <div className="md:col-span-2">
+                  <label className="block text-[11px] font-medium">
+                    Título
+                  </label>
+                  <Input
+                    value={r.titulo}
+                    disabled={p.editable === false}
+                    onChange={(e) =>
+                      updateReconocimiento(iPonente, iRec, {
+                        titulo: e.target.value,
+                      })
                     }
-                  >
-                    ✕
-                  </Button>
+                  />
                 </div>
-
-                <div className="grid md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium">
-                      Título
-                    </label>
-                    <Input
-                      value={rec.titulo}
-                      onChange={(e) =>
-                        updateReconocimiento(iPonente, iRec, {
-                          titulo: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium">
-                      Organización
-                    </label>
-                    <Input
-                      value={rec.organizacion}
-                      onChange={(e) =>
-                        updateReconocimiento(iPonente, iRec, {
-                          organizacion: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium">
-                      Año
-                    </label>
-                    <Input
-                      type="number"
-                      value={rec.anio}
-                      onChange={(e) =>
-                        updateReconocimiento(iPonente, iRec, {
-                          anio: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-
                 <div>
-                  <label className="block text-xs font-medium">
+                  <label className="block text-[11px] font-medium">
+                    Organización
+                  </label>
+                  <Input
+                    value={r.organizacion}
+                    disabled={p.editable === false}
+                    onChange={(e) =>
+                      updateReconocimiento(iPonente, iRec, {
+                        organizacion: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium">Año</label>
+                  <Input
+                    value={r.anio}
+                    disabled={p.editable === false}
+                    onChange={(e) =>
+                      updateReconocimiento(iPonente, iRec, {
+                        anio: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="md:col-span-3">
+                  <label className="block text-[11px] font-medium">
                     Descripción (opcional)
                   </label>
                   <Textarea
-                    className="min-h-16"
-                    value={rec.descripcion ?? ''}
+                    value={r.descripcion ?? ''}
+                    disabled={p.editable === false}
                     onChange={(e) =>
                       updateReconocimiento(iPonente, iRec, {
                         descripcion: e.target.value,
                       })
                     }
+                    className="text-xs"
                   />
+                </div>
+                <div className="flex items-center justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={p.editable === false}
+                    onClick={() => removeReconocimiento(iPonente, iRec)}
+                  >
+                    Quitar
+                  </Button>
                 </div>
               </div>
             ))}
-          </section>
-
-          <Separator />
+          </div>
 
           {/* Experiencia */}
-          <section className="space-y-3">
+          <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="text-sm font-semibold">Experiencia</h4>
+              <div className="text-xs font-semibold">Experiencia</div>
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
+                disabled={p.editable === false}
                 onClick={() => addExperiencia(iPonente)}
               >
                 Agregar experiencia
               </Button>
             </div>
 
-            {p.experiencia.length === 0 && (
+            {(p.experiencia || []).length === 0 && (
               <p className="text-[11px] text-slate-500">
-                No hay experiencias agregadas.
+                Sin experiencia registrada.
               </p>
             )}
 
-            {p.experiencia.map((exp, iExp) => {
-              const esActual = Boolean(exp.puestoActual)
-
-              return (
-                <div
-                  key={iExp}
-                  className="rounded-md border border-slate-200 p-3 space-y-3"
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-medium">
-                      Experiencia #{iExp + 1}{' '}
-                      {esActual && (
-                        <Badge
-                          variant="secondary"
-                          className="ml-1"
-                        >
-                          Puesto actual
-                        </Badge>
-                      )}
-                    </span>
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      onClick={() =>
-                        removeExperiencia(iPonente, iExp)
+            {(p.experiencia || []).map((exp, iExp) => (
+              <div
+                key={iExp}
+                className="space-y-2 rounded-md border border-slate-200 p-2"
+              >
+                <div className="grid md:grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-medium">
+                      Puesto
+                    </label>
+                    <Input
+                      value={exp.puesto}
+                      disabled={p.editable === false}
+                      onChange={(e) =>
+                        updateExperiencia(iPonente, iExp, {
+                          puesto: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium">
+                      Empresa
+                    </label>
+                    <select
+                      className="border rounded-md px-2 py-1 text-xs w-full"
+                      value={exp.idEmpresa ?? ''}
+                      disabled={p.editable === false}
+                      onChange={(e) =>
+                        updateExperiencia(iPonente, iExp, {
+                          idEmpresa: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        })
                       }
                     >
-                      ✕
-                    </Button>
+                      <option value="">Selecciona una empresa</option>
+                      {(empresas || []).map((emp) => (
+                        <option key={emp.id} value={emp.id}>
+                          {emp.nombre}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                  <div>
+                    <label className="block text-[11px] font-medium">País</label>
+                    <select
+                      className="border rounded-md px-2 py-1 text-xs w-full"
+                      value={exp.idPais ?? ''}
+                      disabled={p.editable === false}
+                      onChange={(e) =>
+                        updateExperiencia(iPonente, iExp, {
+                          idPais: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        })
+                      }
+                    >
+                      <option value="">Selecciona un país</option>
+                      {(paises || []).map((pais) => (
+                        <option key={pais.id} value={pais.id}>
+                          {pais.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-                  <div className="grid md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium">
-                        Puesto
-                      </label>
-                      <Input
-                        value={exp.puesto}
-                        onChange={(e) =>
-                          updateExperiencia(iPonente, iExp, {
-                            puesto: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-6">
+                <div className="grid md:grid-cols-3 gap-2 items-end">
+                  <div>
+                    <label className="block text-[11px] font-medium">
+                      Fecha inicio
+                    </label>
+                    <Input
+                      type="date"
+                      value={exp.fechaInicio}
+                      disabled={p.editable === false}
+                      onChange={(e) =>
+                        updateExperiencia(iPonente, iExp, {
+                          fechaInicio: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium">
+                      Fecha fin
+                    </label>
+                    <Input
+                      type="date"
+                      value={exp.fechaFin}
+                      disabled={p.editable === false || exp.puestoActual}
+                      onChange={(e) =>
+                        updateExperiencia(iPonente, iExp, {
+                          fechaFin: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-1 text-[11px]">
                       <input
-                        id={`puesto-actual-${iPonente}-${iExp}`}
                         type="checkbox"
-                        checked={esActual}
+                        checked={exp.puestoActual}
+                        disabled={p.editable === false}
                         onChange={(e) =>
                           updateExperiencia(iPonente, iExp, {
                             puestoActual: e.target.checked,
                           })
                         }
                       />
-                      <label
-                        htmlFor={`puesto-actual-${iPonente}-${iExp}`}
-                        className="text-xs"
-                      >
-                        Puesto actual
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium">
-                        Fecha inicio
-                      </label>
-                      <Input
-                        type="date"
-                        value={exp.fechaInicio}
-                        onChange={(e) =>
-                          updateExperiencia(iPonente, iExp, {
-                            fechaInicio: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium">
-                        Fecha fin
-                      </label>
-                      <Input
-                        type="date"
-                        disabled={esActual}
-                        value={exp.fechaFin}
-                        onChange={(e) =>
-                          updateExperiencia(iPonente, iExp, {
-                            fechaFin: e.target.value,
-                          })
-                        }
-                      />
-                      {esActual && (
-                        <p className="text-[10px] text-slate-500">
-                          Para el puesto actual, la fecha fin la
-                          establecerá el sistema automáticamente.
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium">
-                        País de la empresa
-                      </label>
-                      <select
-                        className="border rounded-md px-2 py-2 w-full text-sm"
-                        value={exp.idPais ?? ''}
-                        onChange={(e) =>
-                          updateExperiencia(iPonente, iExp, {
-                            idPais: e.target.value
-                              ? Number(e.target.value)
-                              : null,
-                          })
-                        }
-                      >
-                        <option value="">
-                          Selecciona un país
-                        </option>
-                        {(paises || []).map((pais) => (
-                          <option
-                            key={pais.id}
-                            value={pais.id}
-                          >
-                            {pais.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Empresa: select + opción de crear */}
-                  <div className="grid md:grid-cols-[2fr_1fr] gap-3 items-end">
-                    <div>
-                      <label className="block text-xs font-medium">
-                        Empresa
-                      </label>
-                      <select
-                        className="border rounded-md px-2 py-2 w-full text-sm"
-                        value={exp.idEmpresa ?? ''}
-                        onChange={(e) =>
-                          updateExperiencia(iPonente, iExp, {
-                            idEmpresa: e.target.value
-                              ? Number(e.target.value)
-                              : null,
-                          })
-                        }
-                      >
-                        <option value="">
-                          Selecciona una empresa
-                        </option>
-                        {(empresas || []).map((emp) => (
-                          <option
-                            key={emp.id}
-                            value={emp.id}
-                          >
-                            {emp.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Form rápido para nueva empresa */}
-                    <NuevaEmpresaInline
-                      onCrear={(nombre, idPais) =>
-                        handleCrearEmpresa(
-                          iPonente,
-                          iExp,
-                          nombre,
-                          idPais,
-                        )
-                      }
-                      paises={paises || []}
-                      disabled={crearEmpresa.isPending}
-                    />
+                      Puesto actual
+                    </label>
                   </div>
                 </div>
-              )
-            })}
-          </section>
 
-          <Separator />
+                {/* Atajo para crear empresa rápida */}
+                <div className="grid md:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-medium">
+                      Crear nueva empresa (rápido)
+                    </label>
+                    <div className="flex gap-1">
+                      <Input
+                        placeholder="Nombre de la empresa"
+                        disabled={p.editable === false}
+                        onBlur={async (e) => {
+                          const nombre = e.target.value.trim()
+                          if (!nombre) return
+                          if (!exp.idPais) {
+                            toast.error(
+                              'Selecciona un país en la experiencia antes de crear empresa',
+                            )
+                            return
+                          }
+                          await handleCrearEmpresa(
+                            iPonente,
+                            iExp,
+                            nombre,
+                            exp.idPais,
+                          )
+                          e.target.value = ''
+                        }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-500">
+                      Escribe el nombre y cambia el foco para crear la empresa y asignarla.
+                    </p>
+                  </div>
+                  <div className="flex items-end justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={p.editable === false}
+                      onClick={() => removeExperiencia(iPonente, iExp)}
+                    >
+                      Quitar experiencia
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
           {/* Grados académicos */}
-          <section className="space-y-3">
+          <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="text-sm font-semibold">
-                Grados académicos
-              </h4>
+              <div className="text-xs font-semibold">Grados académicos</div>
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
+                disabled={p.editable === false}
                 onClick={() => addGrado(iPonente)}
               >
                 Agregar grado
               </Button>
             </div>
 
-            {p.grados.length === 0 && (
+            {(p.grados || []).length === 0 && (
               <p className="text-[11px] text-slate-500">
-                No hay grados agregados.
+                Sin grados registrados.
               </p>
             )}
 
-            {p.grados.map((g, iGrado) => (
+            {(p.grados || []).map((g, iGrado) => (
               <div
                 key={iGrado}
-                className="rounded-md border border-slate-200 p-3 space-y-3"
+                className="space-y-2 rounded-md border border-slate-200 p-2"
               >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium">
-                    Grado #{iGrado + 1}
-                  </span>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    onClick={() =>
-                      removeGrado(iPonente, iGrado)
-                    }
-                  >
-                    ✕
-                  </Button>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-3">
+                <div className="grid md:grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-medium">
+                    <label className="block text-[11px] font-medium">
                       Título del grado
                     </label>
                     <Input
                       value={g.titulo}
+                      disabled={p.editable === false}
                       onChange={(e) =>
                         updateGrado(iPonente, iGrado, {
                           titulo: e.target.value,
@@ -790,12 +959,13 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium">
+                    <label className="block text-[11px] font-medium">
                       Nivel
                     </label>
                     <select
-                      className="border rounded-md px-2 py-2 w-full text-sm"
+                      className="border rounded-md px-2 py-1 text-xs w-full"
                       value={g.idNivel ?? ''}
+                      disabled={p.editable === false}
                       onChange={(e) =>
                         updateGrado(iPonente, iGrado, {
                           idNivel: e.target.value
@@ -804,57 +974,25 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
                         })
                       }
                     >
-                      <option value="">
-                        Selecciona un nivel
-                      </option>
+                      <option value="">Selecciona un nivel</option>
                       {(niveles || []).map((n) => (
-                        <option
-                          key={n.id}
-                          value={n.id}
-                        >
+                        <option key={n.id} value={n.id}>
                           {n.nombre}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium">
-                      País del grado
-                    </label>
-                    <select
-                      className="border rounded-md px-2 py-2 w-full text-sm"
-                      value={g.idPais ?? ''}
-                      onChange={(e) =>
-                        updateGrado(iPonente, iGrado, {
-                          idPais: e.target.value
-                            ? Number(e.target.value)
-                            : null,
-                        })
-                      }
-                    >
-                      <option value="">
-                        Selecciona un país
-                      </option>
-                      {(paises || []).map((pais) => (
-                        <option
-                          key={pais.id}
-                          value={pais.id}
-                        >
-                          {pais.nombre}
                         </option>
                       ))}
                     </select>
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-[2fr_1fr] gap-3 items-end">
+                <div className="grid md:grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-xs font-medium">
+                    <label className="block text-[11px] font-medium">
                       Institución
                     </label>
                     <select
-                      className="border rounded-md px-2 py-2 w-full text-sm"
+                      className="border rounded-md px-2 py-1 text-xs w-full"
                       value={g.idInstitucion ?? ''}
+                      disabled={p.editable === false}
                       onChange={(e) =>
                         updateGrado(iPonente, iGrado, {
                           idInstitucion: e.target.value
@@ -863,145 +1001,87 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
                         })
                       }
                     >
-                      <option value="">
-                        Selecciona una institución
-                      </option>
+                      <option value="">Selecciona una institución</option>
                       {(instituciones || []).map((inst) => (
-                        <option
-                          key={inst.id}
-                          value={inst.id}
-                        >
+                        <option key={inst.id} value={inst.id}>
                           {inst.nombre}
                         </option>
                       ))}
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-[11px] font-medium">
+                      País
+                    </label>
+                    <select
+                      className="border rounded-md px-2 py-1 text-xs w-full"
+                      value={g.idPais ?? ''}
+                      disabled={p.editable === false}
+                      onChange={(e) =>
+                        updateGrado(iPonente, iGrado, {
+                          idPais: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        })
+                      }
+                    >
+                      <option value="">Selecciona un país</option>
+                      {(paises || []).map((pais) => (
+                        <option key={pais.id} value={pais.id}>
+                          {pais.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-end justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={p.editable === false}
+                      onClick={() => removeGrado(iPonente, iGrado)}
+                    >
+                      Quitar grado
+                    </Button>
+                  </div>
+                </div>
 
-                  {/* Form rápido nueva institución */}
-                  <NuevaInstitucionInline
-                    onCrear={(nombre, siglas) =>
-                      handleCrearInstitucion(
-                        iPonente,
-                        iGrado,
-                        nombre,
-                        siglas,
-                      )
-                    }
-                    disabled={crearInstitucion.isPending}
-                  />
+                {/* Atajo para crear institución rápida */}
+                <div>
+                  <label className="block text-[11px] font-medium">
+                    Crear nueva institución (rápido)
+                  </label>
+                  <div className="flex gap-1">
+                    <Input
+                      placeholder="Nombre de la institución"
+                      disabled={p.editable === false}
+                      onBlur={async (e) => {
+                        const nombre = e.target.value.trim()
+                        if (!nombre) return
+                        const siglas = nombre
+                          .split(' ')
+                          .map((part) => part[0])
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 10)
+                        await handleCrearInstitucion(
+                          iPonente,
+                          iGrado,
+                          nombre,
+                          siglas,
+                        )
+                        e.target.value = ''
+                      }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500">
+                    Escribe el nombre y cambia el foco para crear la institución y asignarla.
+                  </p>
                 </div>
               </div>
             ))}
-          </section>
+          </div>
         </div>
       ))}
-    </div>
-  )
-}
-
-// --- Componentes inline auxiliares ---
-
-type NuevaEmpresaInlineProps = {
-  paises: Option[]
-  disabled?: boolean
-  onCrear: (nombre: string, idPais: number | null) => void
-}
-
-function NuevaEmpresaInline({
-  paises,
-  disabled,
-  onCrear,
-}: NuevaEmpresaInlineProps) {
-  const [nombre, setNombre] = useState('')
-  const [idPais, setIdPais] = useState<number | null>(null)
-
-  return (
-    <div className="space-y-1">
-      <label className="block text-xs font-medium">
-        Nueva empresa (opcional)
-      </label>
-      <div className="grid grid-cols-1 gap-2">
-        <Input
-          placeholder="Nombre de la empresa"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-        />
-        <select
-          className="border rounded-md px-2 py-2 w-full text-sm"
-          value={idPais ?? ''}
-          onChange={(e) =>
-            setIdPais(
-              e.target.value ? Number(e.target.value) : null,
-            )
-          }
-        >
-          <option value="">País de la empresa</option>
-          {paises.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nombre}
-            </option>
-          ))}
-        </select>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={disabled}
-          onClick={() => {
-            onCrear(nombre, idPais)
-            setNombre('')
-            setIdPais(null)
-          }}
-        >
-          Guardar empresa
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-type NuevaInstitucionInlineProps = {
-  disabled?: boolean
-  onCrear: (nombre: string, siglas: string) => void
-}
-
-function NuevaInstitucionInline({
-  disabled,
-  onCrear,
-}: NuevaInstitucionInlineProps) {
-  const [nombre, setNombre] = useState('')
-  const [siglas, setSiglas] = useState('')
-
-  return (
-    <div className="space-y-1">
-      <label className="block text-xs font-medium">
-        Nueva institución (opcional)
-      </label>
-      <div className="grid grid-cols-1 gap-2">
-        <Input
-          placeholder="Nombre de la institución"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-        />
-        <Input
-          placeholder="Siglas"
-          value={siglas}
-          onChange={(e) => setSiglas(e.target.value)}
-        />
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={disabled}
-          onClick={() => {
-            onCrear(nombre, siglas)
-            setNombre('')
-            setSiglas('')
-          }}
-        >
-          Guardar institución
-        </Button>
-      </div>
     </div>
   )
 }

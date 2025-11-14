@@ -1,6 +1,7 @@
 package com.idk.fca_auditorios.evento;
 
 import com.idk.fca_auditorios.common.ZipService;
+import com.idk.fca_auditorios.evento.dto.EventoRequest;
 import com.idk.fca_auditorios.pdf.PdfService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -276,7 +277,7 @@ public class EventoController {
   }
 
   @GetMapping("/{id}/detalle")
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('FUNCIONARIO')")
   public Map<String, Object> detalle(@PathVariable Long id) {
     // ── 1) Datos principales del evento (evento.nombre, categoria, megaEvento, etc.)
     Map<String, Object> evento = jdbc.queryForMap("""
@@ -478,6 +479,223 @@ public class EventoController {
             "attachment; filename=" + pdfPath.getFileName().toString())
         .contentType(MediaType.APPLICATION_PDF)
         .body(resource);
+  }
+
+private void validarTraslape(EventoRequest req) {
+    validarTraslape(req, null);
+}
+
+private void validarTraslape(EventoRequest req, Integer editarId) {
+
+    Long count = jdbc.queryForObject("""
+        SELECT COUNT(*)
+          FROM reservacion r
+          JOIN evento e ON e.id_evento = r.id_evento
+         WHERE r.id_recinto = ?
+           AND e.estatus IN ('pendiente','autorizado')
+           AND (? BETWEEN e.fecha_inicio AND e.fecha_fin
+            OR  ? BETWEEN e.fecha_inicio AND e.fecha_fin
+            OR   e.fecha_inicio BETWEEN ? AND ?
+           )
+           AND (? IS NULL OR e.id_evento <> ?)
+    """,
+            Long.class,
+            req.idRecinto,
+            req.fechaInicio,
+            req.fechaFin,
+            req.fechaInicio, req.fechaFin,
+            editarId, editarId
+    );
+
+    if (count != null && count > 0)
+        throw new RuntimeException("El recinto está ocupado en ese horario.");
+}
+
+private void insertarPonentes(Integer idEvento, EventoRequest req) {
+
+    if (req.ponentes == null) return;
+
+    for (var p : req.ponentes) {
+
+        // Regla: solo un puesto actual
+        long count = p.experiencia.stream().filter(x -> x.puestoActual).count();
+        if (count > 1)
+            throw new RuntimeException("Solo un puestoActual = true por ponente");
+
+        // 1. Insertar ponente
+        Integer idPonente = jdbc.queryForObject("""
+            INSERT INTO ponente (nombre, apellido_paterno, apellido_materno, id_pais)
+            VALUES (?, ?, ?, ?)
+            RETURNING id_ponente
+        """, Integer.class,
+                p.nombre, p.apellidoPaterno, p.apellidoMaterno, p.idPais);
+
+        // 2. Insert semblanza
+        Integer idSemblanza = jdbc.queryForObject("""
+            INSERT INTO semblanza (id_ponente, texto)
+            VALUES (?, ?)
+            RETURNING id_semblanza
+        """, Integer.class, idPonente, p.semblanza);
+
+        // 3. Reconocimientos
+        for (var r : p.reconocimientos) {
+            jdbc.update("""
+                INSERT INTO reconocimiento (id_semblanza, titulo, organizacion, anio, descripcion)
+                VALUES (?, ?, ?, ?, ?)
+            """, idSemblanza, r.titulo, r.organizacion, r.anio, r.descripcion);
+        }
+
+        // 4. Experiencia
+        for (var ex : p.experiencia) {
+            jdbc.update("""
+                INSERT INTO experiencia (id_semblanza, puesto, puesto_actual, fecha_inicio, fecha_fin, id_empresa, id_pais)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, idSemblanza, ex.puesto, ex.puestoActual, ex.fechaInicio, ex.fechaFin, ex.idEmpresa, ex.idPais);
+        }
+
+        // 5. Grados
+        for (var g : p.grados) {
+            jdbc.update("""
+                INSERT INTO grado (id_semblanza, titulo, id_nivel, id_institucion, id_pais)
+                VALUES (?, ?, ?, ?, ?)
+            """, idSemblanza, g.titulo, g.idNivel, g.idInstitucion, g.idPais);
+        }
+
+        // 6. Relación ponente-evento
+        jdbc.update("""
+            INSERT INTO participacion (id_evento, id_ponente)
+            VALUES (?, ?)
+        """, idEvento, idPonente);
+    }
+}
+
+
+  @PostMapping("/api/eventos")
+  @PreAuthorize("hasRole('FUNCIONARIO')")
+  public ResponseEntity<?> crearEvento(@RequestBody EventoRequest req) {
+
+      try {
+          // 1. Validación de traslapes
+          validarTraslape(req);
+
+          // 2. Insertar EVENTO
+          Integer idEvento = jdbc.queryForObject(
+                  """
+                  INSERT INTO evento (nombre, descripcion, estatus, fecha_inicio, fecha_fin,
+                                      horario_inicio, horario_fin, presencial, online,
+                                      id_categoria, mega_evento, id_mega_evento,
+                                      fecha_registro, id_calendario_escolar)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(),
+                          (SELECT id_calendario_escolar FROM calendario_escolar ORDER BY fecha_inicio DESC LIMIT 1))
+                  RETURNING id_evento;
+                  """,
+                  Integer.class,
+                  req.nombre, req.descripcion, req.estatus,
+                  req.fechaInicio, req.fechaFin,
+                  req.horarioInicio, req.horarioFin,
+                  req.presencial, req.online,
+                  req.idCategoria,
+                  req.isMegaEvento, req.idMegaEvento
+          );
+
+          // 3. Crear reservación
+          jdbc.update("""
+              INSERT INTO reservacion (id_evento, id_recinto)
+              VALUES (?, ?)
+          """, idEvento, req.idRecinto);
+
+          // 4. Insertar organizadores
+          if (req.organizadores != null) {
+              for (var o : req.organizadores) {
+                  jdbc.update("""
+                      INSERT INTO evento_organizador (id_evento, id_usuario)
+                      VALUES (?, ?)
+                  """, idEvento, o.idUsuario);
+              }
+          }
+
+          // 5. Insertar equipamiento
+          if (req.equipamiento != null) {
+              for (var eq : req.equipamiento) {
+                  jdbc.update("""
+                      INSERT INTO evento_equipamiento (id_evento, id_equipamiento, cantidad)
+                      VALUES (?, ?, ?)
+                  """, idEvento, eq.idEquipamiento, eq.cantidad);
+              }
+          }
+
+          // 6. Insertar ponentes
+          insertarPonentes(idEvento, req);
+
+          return ResponseEntity.ok(Map.of(
+                  "id", idEvento,
+                  "message", "Evento creado correctamente"
+          ));
+
+      } catch (Exception ex) {
+          ex.printStackTrace();
+          return ResponseEntity.status(400).body(Map.of("message", ex.getMessage()));
+      }
+  }
+
+  @PutMapping("/api/eventos/{id}")
+  @PreAuthorize("hasRole('FUNCIONARIO')")
+  public ResponseEntity<?> actualizarEvento(
+          @PathVariable Integer id,
+          @RequestBody EventoRequest req
+  ){
+      try {
+          validarTraslape(req, id);
+
+          jdbc.update("""
+              UPDATE evento
+                SET nombre = ?, descripcion = ?, estatus = ?, fecha_inicio = ?, fecha_fin = ?,
+                    horario_inicio = ?, horario_fin = ?, presencial = ?, online = ?,
+                    id_categoria = ?, mega_evento = ?, id_mega_evento = ?
+              WHERE id_evento = ?
+          """,
+                  req.nombre, req.descripcion, req.estatus, req.fechaInicio,
+                  req.fechaFin, req.horarioInicio, req.horarioFin,
+                  req.presencial, req.online, req.idCategoria,
+                  req.isMegaEvento, req.idMegaEvento, id
+          );
+
+          // actualizar recinto
+          jdbc.update("""
+              UPDATE reservacion SET id_recinto = ?
+              WHERE id_evento = ?
+          """, req.idRecinto, id);
+
+          // reemplazar organizadores
+          jdbc.update("DELETE FROM evento_organizador WHERE id_evento=?", id);
+          if (req.organizadores != null) {
+              for (var o : req.organizadores) {
+                  jdbc.update("""
+                      INSERT INTO evento_organizador (id_evento, id_usuario)
+                      VALUES (?, ?)
+                  """, id, o.idUsuario);
+              }
+          }
+
+          // reemplazar equipamiento
+          jdbc.update("DELETE FROM evento_equipamiento WHERE id_evento=?", id);
+          if (req.equipamiento != null) {
+              for (var eq : req.equipamiento) {
+                  jdbc.update("""
+                      INSERT INTO evento_equipamiento (id_evento, id_equipamiento, cantidad)
+                      VALUES (?, ?, ?)
+                  """, id, eq.idEquipamiento, eq.cantidad);
+              }
+          }
+
+          // ponentes
+          insertarPonentes(id, req);
+
+          return ResponseEntity.ok(Map.of("message", "Evento actualizado correctamente"));
+
+      } catch (Exception ex) {
+          return ResponseEntity.status(400).body(Map.of("message", ex.getMessage()));
+      }
   }
 
 }

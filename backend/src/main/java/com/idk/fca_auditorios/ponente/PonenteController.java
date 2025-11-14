@@ -213,4 +213,80 @@ public class PonenteController {
     return toSnakeCase(base) + ".pdf";
   }
 
+  @GetMapping("/search")
+  public List<Map<String, Object>> search(@RequestParam String q) {
+
+      String like = "%" + q.toLowerCase() + "%";
+
+      return jdbc.queryForList("""
+          SELECT p.id_ponente,
+                p.nombre,
+                p.apellido_paterno,
+                p.apellido_materno,
+                pa.nombre AS pais
+          FROM ponente p
+          JOIN pais pa ON pa.id_pais = p.id_pais
+          WHERE LOWER(p.nombre) LIKE ?
+            OR LOWER(p.apellido_paterno) LIKE ?
+            OR LOWER(p.apellido_materno) LIKE ?
+          ORDER BY p.nombre
+      """, like, like, like);
+  }
+
+  @GetMapping("/{id}")
+  public Map<String, Object> get(@PathVariable Integer id) {
+
+      Map<String, Object> ponente = jdbc.queryForMap("""
+          SELECT p.id_ponente,
+                p.nombre,
+                p.apellido_paterno,
+                p.apellido_materno,
+                p.id_pais,
+                pa.nombre AS pais
+            FROM ponente p
+            JOIN pais pa ON pa.id_pais = p.id_pais
+          WHERE p.id_ponente = ?
+      """, id);
+
+      List<Map<String, Object>> semblanzas = jdbc.queryForList("""
+          SELECT id_semblanza, texto
+          FROM semblanza
+          WHERE id_ponente = ?
+      """, id);
+
+      List<Map<String, Object>> reconocimientos = jdbc.queryForList("""
+          SELECT r.*, s.id_semblanza
+          FROM reconocimiento r
+          JOIN semblanza s ON s.id_semblanza = r.id_semblanza
+          WHERE s.id_ponente = ?
+          ORDER BY anio DESC
+      """, id);
+
+      List<Map<String, Object>> experiencia = jdbc.queryForList("""
+          SELECT e.*, s.id_semblanza, emp.nombre AS empresa
+          FROM experiencia e
+          JOIN semblanza s ON s.id_semblanza = e.id_semblanza
+          LEFT JOIN empresa emp ON emp.id_empresa = e.id_empresa
+          WHERE s.id_ponente = ?
+          ORDER BY fecha_inicio DESC
+      """, id);
+
+      List<Map<String, Object>> grados = jdbc.queryForList("""
+          SELECT g.*, s.id_semblanza, i.nombre AS institucion
+          FROM grado g
+          JOIN semblanza s ON s.id_semblanza = g.id_semblanza
+          LEFT JOIN institucion i ON i.id_institucion = g.id_institucion
+          WHERE s.id_ponente = ?
+          ORDER BY g.id_grado DESC
+      """, id);
+
+      return Map.of(
+              "ponente", ponente,
+              "semblanza", semblanzas,
+              "reconocimientos", reconocimientos,
+              "experiencia", experiencia,
+              "grados", grados
+      );
+  }
+
 }

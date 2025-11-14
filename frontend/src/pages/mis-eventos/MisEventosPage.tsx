@@ -204,7 +204,13 @@ export default function MisEventosPage() {
       {/* Sheet de creación/edición de evento */}
       <EventoFormSheet
         open={openForm}
-        onOpenChange={(isOpen) => setOpenForm(isOpen)}
+        onOpenChange={(isOpen) => {
+          setOpenForm(isOpen)
+          // Al cerrar, limpiamos el id para que la próxima vez "Nuevo" sea create
+          if (!isOpen) {
+            setEditingId(null)
+          }
+        }}
         mode={editingId ? 'edit' : 'create'}
         eventoId={editingId ?? undefined}
       />
