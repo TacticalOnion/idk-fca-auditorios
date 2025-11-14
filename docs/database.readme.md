@@ -49,3 +49,10 @@ Este script genera un archivo `.json` con los comentarios en el esquema public d
 ```psql
 psql -U postgres -d fca_auditorios -f 00_exportar_diccionario_de_datos.sql -o diccionario_datos_fca_auditorios.json
 ```
+
+## Listar nombre usuario y rol usuario
+Este script lista el nombre de usuario y su rol usuario.
+
+```psql
+psql -U postgres -d fca_auditorios -f 00_listar_nombre_usuario_rol_usuario.sql
+```
