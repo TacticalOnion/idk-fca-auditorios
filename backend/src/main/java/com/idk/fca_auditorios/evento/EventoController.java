@@ -148,13 +148,13 @@ public class EventoController {
 
   @GetMapping("/{id}/verificar-equipamiento")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  public List<java.util.Map<String,Object>> verificar(@PathVariable Long id) {
+  public List<java.util.Map<String,Object>> verificar(@PathVariable("id") Long id) {
     return service.verificarEquipamiento(id);
   }
 
   @PostMapping("/{id}/autorizar")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  public Evento autorizar(@PathVariable Long id) {
+  public Evento autorizar(@PathVariable("id") Long id) {
     return service.autorizar(id);
   }
 
@@ -179,7 +179,7 @@ public class EventoController {
 
   @PostMapping("/{id}/deshacer")
   @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('FUNCIONARIO')")
-  public Evento deshacer(@PathVariable Long id) {
+  public Evento deshacer(@PathVariable("id") Long id) {
     return service.deshacer(id);
   }
 
@@ -232,7 +232,7 @@ public class EventoController {
 
   @PostMapping("/{id}/descargar-reconocimientos")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  public ResponseEntity<Resource> descargarReconocimientos(@PathVariable Long id) throws Exception {
+  public ResponseEntity<Resource> descargarReconocimientos(@PathVariable("id") Long id) throws Exception {
     List<Long> ponentes = repoPonentesDelEvento(id);
     if (ponentes.isEmpty()) {
       return ResponseEntity.noContent().build();
@@ -269,7 +269,7 @@ public class EventoController {
 
   @PostMapping("/{id}/descargar-semblanzas")
   @PreAuthorize("hasRole('ADMINISTRADOR')")
-  public ResponseEntity<Resource> descargarSemblanzas(@PathVariable Long id) throws Exception {
+  public ResponseEntity<Resource> descargarSemblanzas(@PathVariable("id") Long id) throws Exception {
     // Reutilizamos la misma consulta de ponentes del evento
     List<Long> ponentes = repoPonentesDelEvento(id);
     if (ponentes.isEmpty()) {
@@ -291,7 +291,7 @@ public class EventoController {
 
   @GetMapping("/{id}/detalle")
   @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('FUNCIONARIO')")
-  public Map<String, Object> detalle(@PathVariable Long id) {
+  public Map<String, Object> detalle(@PathVariable("id") Long id) {
     // ── 1) Datos principales del evento (evento.nombre, categoria, megaEvento, etc.)
     Map<String, Object> evento = jdbc.queryForMap("""
         SELECT
