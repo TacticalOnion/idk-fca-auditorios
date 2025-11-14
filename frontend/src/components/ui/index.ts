@@ -27,6 +27,7 @@ export {
   Sheet,
   SheetContent,
   SheetHeader,
+  SheetFooter,
   SheetTitle,
   SheetDescription,
   SheetTrigger
