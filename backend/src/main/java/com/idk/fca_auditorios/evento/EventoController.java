@@ -159,9 +159,22 @@ public class EventoController {
   }
 
   @PostMapping("/{id}/cancelar")
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
-  public Evento cancelar(@PathVariable Long id, @RequestParam String motivo) {
-    return service.cancelar(id, motivo);
+  @PreAuthorize("hasRole('FUNCIONARIO')")
+  public ResponseEntity<?> cancelarEvento(@PathVariable("id") Integer id) {
+
+    int updated = jdbc.update("""
+        UPDATE evento
+           SET estatus = 'cancelado'
+         WHERE id_evento = ?
+        """, id);
+
+    if (updated == 0) {
+      return ResponseEntity
+          .status(404)
+          .body(Map.of("message", "Evento no encontrado"));
+    }
+
+    return ResponseEntity.ok(Map.of("message", "Evento cancelado correctamente"));
   }
 
   @PostMapping("/{id}/deshacer")

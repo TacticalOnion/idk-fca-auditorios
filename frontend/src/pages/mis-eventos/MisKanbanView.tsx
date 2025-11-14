@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Evento } from '@/types'
 import {
   Card,
@@ -9,6 +10,8 @@ import {
   Button,
   Badge,
 } from '@ui/index'
+import { toast } from 'sonner'
+import { api } from '@/lib/api'
 import EventDetailSheet from '@/pages/eventos/EventDetailSheet'
 
 type MisKanbanViewProps = {
@@ -19,6 +22,8 @@ type MisKanbanViewProps = {
 export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
   const [openDetail, setOpenDetail] = useState(false)
   const [selId, setSelId] = useState<number | null>(null)
+
+  const queryClient = useQueryClient()
 
   function openDetailSheet(ev: Evento) {
     setSelId(ev.id)
@@ -68,6 +73,28 @@ export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
       default:
         return key
     }
+  }
+
+  const cancelarEvento = useMutation({
+    mutationFn: async (idEvento: number) => {
+      await api.post(`/api/eventos/${idEvento}/cancelar`)
+    },
+    onSuccess: () => {
+      toast.success('Evento cancelado correctamente')
+      queryClient.invalidateQueries({ queryKey: ['mis-eventos'] })
+      queryClient.invalidateQueries({ queryKey: ['eventos'] })
+    },
+    onError: (error: unknown) => {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? 'No se pudo cancelar el evento'
+      toast.error('Error al cancelar el evento', { description: message })
+    },
+  })
+
+  const handleCancelarClick = (evento: Evento) => {
+    if (evento.estatus === 'cancelado') return
+    cancelarEvento.mutate(evento.id)
   }
 
   return (
@@ -135,6 +162,19 @@ export default function MisKanbanView({ data, onEdit }: MisKanbanViewProps) {
                       onClick={() => onEdit(evento)}
                     >
                       Editar
+                    </Button>
+
+                    {/* Botón Cancelar */}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={
+                        evento.estatus === 'cancelado' ||
+                        cancelarEvento.isPending
+                      }
+                      onClick={() => handleCancelarClick(evento)}
+                    >
+                      {evento.estatus === 'cancelado' ? 'Cancelado' : 'Cancelar'}
                     </Button>
                   </CardFooter>
                 </Card>
