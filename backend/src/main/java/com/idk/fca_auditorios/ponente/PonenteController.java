@@ -249,32 +249,36 @@ public class PonenteController {
       """, id);
 
       List<Map<String, Object>> semblanzas = jdbc.queryForList("""
-          SELECT id_semblanza, texto
+          SELECT id_semblanza, biografia
           FROM semblanza
           WHERE id_ponente = ?
       """, id);
 
       List<Map<String, Object>> reconocimientos = jdbc.queryForList("""
-          SELECT r.*, s.id_semblanza
-          FROM reconocimiento r
-          JOIN semblanza s ON s.id_semblanza = r.id_semblanza
+          SELECT r.*, sxr.id_semblanza
+          FROM semblanzaxreconocimiento sxr
+          JOIN reconocimiento r ON r.id_reconocimiento = sxr.id_reconocimiento
+          JOIN semblanza s ON s.id_semblanza = sxr.id_semblanza
           WHERE s.id_ponente = ?
-          ORDER BY anio DESC
+          ORDER BY r.anio DESC
       """, id);
 
+
       List<Map<String, Object>> experiencia = jdbc.queryForList("""
-          SELECT e.*, s.id_semblanza, emp.nombre AS empresa
-          FROM experiencia e
-          JOIN semblanza s ON s.id_semblanza = e.id_semblanza
+          SELECT e.*, sxe.id_semblanza, emp.nombre AS empresa
+          FROM semblanzaxexperiencia sxe
+          JOIN experiencia e ON e.id_experiencia = sxe.id_experiencia
+          JOIN semblanza s ON s.id_semblanza = sxe.id_semblanza
           LEFT JOIN empresa emp ON emp.id_empresa = e.id_empresa
           WHERE s.id_ponente = ?
-          ORDER BY fecha_inicio DESC
+          ORDER BY e.fecha_inicio DESC
       """, id);
 
       List<Map<String, Object>> grados = jdbc.queryForList("""
-          SELECT g.*, s.id_semblanza, i.nombre AS institucion
-          FROM grado g
-          JOIN semblanza s ON s.id_semblanza = g.id_semblanza
+          SELECT g.*, sxg.id_semblanza, i.nombre AS institucion
+          FROM semblanzaxgrado sxg
+          JOIN grado g ON g.id_grado = sxg.id_grado
+          JOIN semblanza s ON s.id_semblanza = sxg.id_semblanza
           LEFT JOIN institucion i ON i.id_institucion = g.id_institucion
           WHERE s.id_ponente = ?
           ORDER BY g.id_grado DESC

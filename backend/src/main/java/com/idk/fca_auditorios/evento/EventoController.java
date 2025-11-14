@@ -314,6 +314,7 @@ public class EventoController {
           ce.semestre             AS "calendarioEscolar",
 
           -- recinto principal (reservación)
+          r.id_recinto           AS "idRecinto",
           rc.nombre               AS recinto
 
         FROM evento e
@@ -345,16 +346,19 @@ public class EventoController {
         """, id);
 
 
-    // ── 3) Organizadores: solo nombreCompleto
+    // ── 3) Organizadores: idUsuario + nombreCompleto
     List<Map<String, Object>> organizadores = jdbc.queryForList("""
-        SELECT
-          u.id_usuario AS id,
-          u.nombre || ' ' || u.apellido_paterno || ' ' || COALESCE(u.apellido_materno, '') AS "nombreCompleto"
-        FROM evento_organizador eo
-        JOIN usuario u ON u.id_usuario = eo.id_usuario
-        WHERE eo.id_evento = ?
-        ORDER BY u.nombre, u.apellido_paterno, u.apellido_materno
-        """, id);
+      SELECT
+        u.id_usuario AS "idUsuario",
+        u.nombre || ' ' || u.apellido_paterno || ' ' || COALESCE(u.apellido_materno, '') AS "nombreCompleto"
+      FROM evento_organizador eo
+      JOIN usuario u ON u.id_usuario = eo.id_usuario
+      WHERE eo.id_evento = ?
+      ORDER BY u.nombre, u.apellido_paterno, u.apellido_materno
+      """, id);
+
+
+
 
     // ── 4) Áreas involucradas: DISTINCT por organizadores
     List<Map<String, Object>> areas = jdbc.queryForList("""
@@ -384,7 +388,7 @@ public class EventoController {
           FROM equipamiento e
         )
         SELECT
-          ex.id_equipamiento AS id,
+          ex.id_equipamiento AS "idEquipamiento",
           eq.nombre          AS equipamiento,
           ex.cantidad        AS cantidad,
           CASE
@@ -532,7 +536,7 @@ private void insertarPonentes(Integer idEvento, EventoRequest req) {
 
         // 2. Insert semblanza
         Integer idSemblanza = jdbc.queryForObject("""
-            INSERT INTO semblanza (id_ponente, texto)
+            INSERT INTO semblanza (id_ponente, biografia)
             VALUES (?, ?)
             RETURNING id_semblanza
         """, Integer.class, idPonente, p.semblanza);

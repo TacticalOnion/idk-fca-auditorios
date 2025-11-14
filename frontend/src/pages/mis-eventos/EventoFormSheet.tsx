@@ -44,6 +44,11 @@ type EventoFormSheetProps = {
   eventoId?: number
 }
 
+import {
+  type PonenteFullResponse,
+  mapPonenteFullResponseToFormValue
+} from '@/pages/mis-eventos/ponente-mapper'
+
 /**
  * Estructura de los valores del formulario.
  */
@@ -61,7 +66,7 @@ type FormValues = {
   online: boolean
   estatus: string
   descripcion: string
-  organizadores: { idUsuario: number }[]
+  organizadores: { idUsuario: number}[]
   equipamiento: { idEquipamiento: number; cantidad: number }[]
   ponentes: PonenteFormValue[]
 }
@@ -70,42 +75,6 @@ type FormValues = {
 type Option = {
   id: number
   nombre: string
-}
-
-// Mapper de PonenteEvento (backend) -> PonenteFormValue (formulario)
-function mapPonenteEventoToFormValue(ponente: PonenteEvento): PonenteFormValue {
-  const fullName = (ponente.nombreCompleto ?? '').trim()
-
-  const parts = fullName.split(/\s+/)
-  const nombre = parts[0] ?? ''
-  const apellidoPaterno = parts[1] ?? ''
-  const apellidoMaterno = parts.slice(2).join(' ')
-
-  const reconocimientos: PonenteFormValue['reconocimientos'] =
-    ponente.reconocimiento
-      ? [
-          {
-            idSemblanza: null,
-            idReconocimiento: undefined,
-            titulo: ponente.reconocimiento,
-            organizacion: '',
-            anio: '',
-            descripcion: '',
-          },
-        ]
-      : []
-
-  return {
-    id: ponente.id,
-    nombre,
-    apellidoPaterno,
-    apellidoMaterno,
-    idPais: null,
-    semblanza: ponente.semblanza ?? '',
-    reconocimientos,
-    experiencia: [],
-    grados: [],
-  }
 }
 
 export default function EventoFormSheet({
@@ -254,10 +223,7 @@ export default function EventoFormSheet({
           cantidad: Number(eq.cantidad ?? 1),
         })) ?? []
 
-      const ponentesForm: PonenteFormValue[] =
-        (detalle.ponentes as PonenteEvento[] | undefined)?.map(
-          (p) => mapPonenteEventoToFormValue(p),
-        ) ?? []
+      const ponentesForm: PonenteFormValue[] = []
 
       return {
         nombre: ev.nombre ?? '',
@@ -320,6 +286,36 @@ export default function EventoFormSheet({
       reset(defaultValues)
     }
   }, [mode, detalle, reset, defaultValues])
+
+  // Cargar detalles completos de los ponentes en modo edición
+  useEffect(() => {
+    if (mode !== 'edit') return
+    if (!detalle?.ponentes) return
+
+    // Si ya hay ponentes en el form (ej. usuario ya editó), no sobrescribimos
+    const currentPonentes = watch('ponentes')
+    if (currentPonentes && currentPonentes.length > 0) return
+
+    const cargarPonentes = async () => {
+      try {
+        const listaBackend = detalle.ponentes as PonenteEvento[]
+        const enriched: PonenteFormValue[] = []
+
+        for (const p of listaBackend) {
+          // Para cada ponente del evento, pedimos sus datos completos
+          const res = await api.get<PonenteFullResponse>(`/api/ponentes/${p.id}`)
+          enriched.push(mapPonenteFullResponseToFormValue(res.data))
+        }
+
+        setValue('ponentes', enriched, { shouldDirty: false })
+      } catch (error) {
+        console.error(error)
+        toast.error('No se pudieron cargar los detalles de los ponentes')
+      }
+    }
+
+    void cargarPonentes()
+  }, [mode, detalle?.ponentes, watch, setValue])
 
   // Mutación para crear/actualizar
   const mutation = useMutation({
@@ -493,21 +489,6 @@ export default function EventoFormSheet({
                   <input type="checkbox" {...register('online')} />
                   Online
                 </label>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium">Estatus</label>
-                <select
-                  className="border rounded-md px-2 py-2 w-full text-sm"
-                  {...register('estatus')}
-                >
-                  <option value="pendiente">Pendiente</option>
-                  <option value="autorizado">Autorizado</option>
-                  <option value="cancelado">Cancelado</option>
-                  <option value="realizado">Realizado</option>
-                </select>
               </div>
             </div>
 

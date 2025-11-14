@@ -9,6 +9,10 @@ import {
 } from '@ui/index'
 import { api } from '@/lib/api'
 import { toast } from 'sonner'
+import {
+  type PonenteFullResponse,
+  mapPonenteFullResponseToFormValue,
+} from '@/pages/mis-eventos/ponente-mapper'
 
 export type ReconocimientoForm = {
   idSemblanza?: number | null
@@ -69,50 +73,6 @@ type PonenteSearchItem = {
   apellido_paterno: string
   apellido_materno?: string | null
   pais?: string | null
-}
-
-type ReconocimientoBackend = {
-  id_semblanza?: number | null
-  id_reconocimiento?: number | null
-  titulo?: string | null
-  organizacion?: string | null
-  anio?: number | string | null
-  descripcion?: string | null
-}
-
-type ExperienciaBackend = {
-  id_semblanza?: number | null
-  id_experiencia?: number | null
-  puesto?: string | null
-  puesto_actual?: boolean | null
-  fecha_inicio?: string | null
-  fecha_fin?: string | null
-  id_empresa?: number | null
-  id_pais?: number | null
-}
-
-type GradoBackend = {
-  id_semblanza?: number | null
-  id_grado?: number | null
-  titulo?: string | null
-  id_nivel?: number | null
-  id_institucion?: number | null
-  id_pais?: number | null
-}
-
-// Respuesta de /api/ponentes/{id}
-type PonenteFullResponse = {
-  ponente: {
-    id_ponente: number
-    nombre: string
-    apellido_paterno: string
-    apellido_materno?: string | null
-    id_pais?: number | null
-  }
-  semblanza: { id_semblanza: number; texto: string }[]
-  reconocimientos: ReconocimientoBackend[]
-  experiencia: ExperienciaBackend[]
-  grados: GradoBackend[]
 }
 
 type PonentesFormProps = {
@@ -216,47 +176,8 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
 
       const res = await api.get<PonenteFullResponse>(`/api/ponentes/${idPonente}`)
       const data = res.data
-
-      const baseSemblanza =
-        Array.isArray(data.semblanza) && data.semblanza.length > 0
-          ? data.semblanza[0]
-          : null
-
-      const nuevo: PonenteFormValue = {
-        id: data.ponente.id_ponente,
-        nombre: data.ponente.nombre,
-        apellidoPaterno: data.ponente.apellido_paterno,
-        apellidoMaterno: data.ponente.apellido_materno ?? '',
-        idPais: data.ponente.id_pais ?? null,
-        semblanza: baseSemblanza?.texto ?? '',
-        reconocimientos: (data.reconocimientos || []).map((r) => ({
-          idSemblanza: r.id_semblanza ?? baseSemblanza?.id_semblanza ?? null,
-          idReconocimiento: r.id_reconocimiento ?? null,
-          titulo: r.titulo ?? '',
-          organizacion: r.organizacion ?? '',
-          anio: r.anio != null ? String(r.anio) : '',
-          descripcion: r.descripcion ?? '',
-        })),
-        experiencia: (data.experiencia || []).map((e) => ({
-          idSemblanza: e.id_semblanza ?? baseSemblanza?.id_semblanza ?? null,
-          idExperiencia: e.id_experiencia ?? null,
-          puesto: e.puesto ?? '',
-          puestoActual: Boolean(e.puesto_actual),
-          fechaInicio: e.fecha_inicio ?? '',
-          fechaFin: e.fecha_fin ?? '',
-          idEmpresa: e.id_empresa ?? null,
-          idPais: e.id_pais ?? null,
-        })),
-        grados: (data.grados || []).map((g) => ({
-          idSemblanza: g.id_semblanza ?? baseSemblanza?.id_semblanza ?? null,
-          idGrado: g.id_grado ?? null,
-          titulo: g.titulo ?? '',
-          idNivel: g.id_nivel ?? null,
-          idInstitucion: g.id_institucion ?? null,
-          idPais: g.id_pais ?? null,
-        })),
-        editable: false, // Importado: por defecto bloqueado
-      }
+      
+      const nuevo = mapPonenteFullResponseToFormValue(data)
 
       onChange([...ponentes, nuevo])
       toast.success('Ponente importado al evento')
@@ -538,7 +459,7 @@ export default function PonentesForm({ value, onChange }: PonentesFormProps) {
             <div className="text-sm font-semibold">
               Ponente {iPonente + 1}{' '}
               {p.nombre && (
-                <span className="font-normal text-slate-600">
+                <span className="font-normal">
                   - {p.nombre} {p.apellidoPaterno} {p.apellidoMaterno}
                 </span>
               )}
