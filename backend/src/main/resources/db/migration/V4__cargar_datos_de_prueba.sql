@@ -6516,6 +6516,403 @@ VALUES
 ---------------------------------------------------------
 -- auditoria
 ---------------------------------------------------------
--- TODO : agregar datos muestra (revisar si es necesario)
+INSERT INTO public.auditoria (nombre_tabla,id_registro_afectado,accion,campo_modificado,valor_anterior,valor_nuevo,fecha_hora,id_usuario,id_puesto) 
+VALUES
+-- 1
+('usuario',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'ana_garcia_lopez'),
+    'INSERT',
+    'correo',
+    'NULL',
+    (SELECT correo FROM public.usuario WHERE nombre_usuario = 'ana_garcia_lopez'),
+    '2025-11-10 07:15:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'ana_garcia_lopez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'ana_garcia_lopez')
+),
+
+-- 2
+('usuario',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'carlos_perez_mendoza'),
+    'INSERT',
+    'telefono',
+    'NULL',
+    (SELECT telefono FROM public.usuario WHERE nombre_usuario = 'carlos_perez_mendoza'),
+    '2025-11-10 08:00:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'carlos_perez_mendoza'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'carlos_perez_mendoza')
+),
+
+-- 3
+('usuario',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'lucia_martinez_ramirez'),
+    'INSERT',
+    'celular',
+    'NULL',
+    (SELECT celular FROM public.usuario WHERE nombre_usuario = 'lucia_martinez_ramirez'),
+    '2025-11-10 09:45:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'lucia_martinez_ramirez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'lucia_martinez_ramirez')
+),
+
+-- 4
+('usuario',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'dvega'),
+    'UPDATE',
+    'telefono',
+    '5511999999',
+    (SELECT telefono FROM public.usuario WHERE nombre_usuario = 'dvega'),
+    '2025-11-10 16:30:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'dvega'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'dvega')
+),
+
+-- 5
+('usuario',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'esanchez'),
+    'UPDATE',
+    'correo',
+    'esanchez.old@fca.unam.mx',
+    (SELECT correo FROM public.usuario WHERE nombre_usuario = 'esanchez'),
+    '2025-11-10 21:50:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'esanchez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'esanchez')
+),
+
+-- 6
+('usuario',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'flopez'),
+    'UPDATE',
+    'activo',
+    'false',
+    (SELECT CASE WHEN activo THEN 'true' ELSE 'false' END FROM public.usuario WHERE nombre_usuario = 'flopez'),
+    '2025-11-11 07:05:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'flopez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'flopez')
+),
+
+-- 7
+('usuario',
+    9999,
+    'DELETE',
+    NULL,
+    NULL,
+    NULL,
+    '2025-11-11 08:20:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'wyanez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'wyanez')
+),
+
+-- 8
+('usuario',
+    8888,
+    'DELETE',
+    NULL,
+    NULL,
+    NULL,
+    '2025-11-11 10:10:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'vximenez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'vximenez')
+),
+
+-- 9
+('evento',
+    (SELECT id_evento FROM public.evento WHERE nombre = 'Taller de liderazgo ágil'),
+    'INSERT',
+    'estatus',
+    'NULL',
+    (SELECT estatus FROM public.evento WHERE nombre = 'Taller de liderazgo ágil'),
+    '2025-11-11 13:40:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'gnavarro'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'gnavarro')
+),
+
+-- 10
+('evento',
+    (SELECT id_evento FROM public.evento WHERE nombre = 'Conversatorio: Gestión del cambio'),
+    'UPDATE',
+    'estatus',
+    'pendiente',
+    (SELECT estatus FROM public.evento WHERE nombre = 'Conversatorio: Gestión del cambio'),
+    '2025-11-11 18:25:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'hramirez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'hramirez')
+),
+
+-- 11  (fecha_hora repetida 1/4)
+('evento',
+    (SELECT id_evento FROM public.evento WHERE nombre = 'Charla: OKRs en empresas medianas'),
+    'UPDATE',
+    'descripcion',
+    'Descripción anterior del evento',
+    (SELECT descripcion FROM public.evento WHERE nombre = 'Charla: OKRs en empresas medianas'),
+    '2025-11-12 09:30:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'icastillo'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'icastillo')
+),
+
+-- 12  (fecha_hora repetida 2/4)
+('evento',
+    12345,
+    'DELETE',
+    NULL,
+    NULL,
+    NULL,
+    '2025-11-12 09:30:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'esanchez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'esanchez')
+),
+
+-- 13  (fecha_hora repetida 3/4)
+('evento',
+    (SELECT id_evento FROM public.evento WHERE nombre = 'Seminario: Tratados comerciales emergentes'),
+    'INSERT',
+    'descripcion',
+    'NULL',
+    (SELECT descripcion FROM public.evento WHERE nombre = 'Seminario: Tratados comerciales emergentes'),
+    '2025-11-12 09:30:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'dvega'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'dvega')
+),
+
+-- 14  (fecha_hora repetida 4/4)
+('evento',
+    (SELECT id_evento FROM public.evento WHERE nombre = 'Charla: Inteligencia de mercados'),
+    'UPDATE',
+    'estatus',
+    'pendiente',
+    (SELECT estatus FROM public.evento WHERE nombre = 'Charla: Inteligencia de mercados'),
+    '2025-11-12 09:30:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'flopez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'flopez')
+),
+
+-- 15
+('recinto',
+    (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio Mtro. Carlos Pérez del Toro'),
+    'UPDATE',
+    'aforo',
+    '200',
+    (SELECT aforo FROM public.recinto WHERE nombre = 'Auditorio Mtro. Carlos Pérez del Toro'),
+    '2025-11-12 11:15:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'gnavarro'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'gnavarro')
+),
+
+-- 16
+('recinto',
+    (SELECT id_recinto FROM public.recinto WHERE nombre = 'Aula Magna de Profesores Eméritos'),
+    'INSERT',
+    'croquis',
+    'NULL',
+    (SELECT croquis FROM public.recinto WHERE nombre = 'Aula Magna de Profesores Eméritos'),
+    '2025-11-12 15:00:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'vximenez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'vximenez')
+),
+
+-- 17
+('recinto',
+    (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio C.P. Tomás López Sánchez'),
+    'UPDATE',
+    'latitud',
+    '19.330000',
+    (SELECT latitud::TEXT FROM public.recinto WHERE nombre = 'Auditorio C.P. Tomás López Sánchez'),
+    '2025-11-12 19:45:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'wyanez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'wyanez')
+),
+
+-- 18
+('recinto',
+    (SELECT id_recinto FROM public.recinto WHERE nombre = 'Centro de Informática (CIFCA)'),
+    'UPDATE',
+    'longitud',
+    '-99.180000',
+    (SELECT longitud::TEXT FROM public.recinto WHERE nombre = 'Centro de Informática (CIFCA)'),
+    '2025-11-13 07:30:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'zbautista'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'zbautista')
+),
+
+-- 19
+('recinto',
+    7777,
+    'DELETE',
+    NULL,
+    NULL,
+    NULL,
+    '2025-11-13 09:05:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'gnavarro'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'gnavarro')
+),
+
+-- 20
+('inventario_area',
+    (SELECT numero_registro
+        FROM public.inventario_area ia
+        WHERE ia.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Paño azul')
+          AND ia.id_area = (SELECT id_area FROM public.area WHERE nombre = 'Actos')),
+    'INSERT',
+    'cantidad',
+    'NULL',
+    (SELECT cantidad::TEXT
+        FROM public.inventario_area ia
+        WHERE ia.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Paño azul')
+          AND ia.id_area = (SELECT id_area FROM public.area WHERE nombre = 'Actos')),
+    '2025-11-13 12:20:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'ana_garcia_lopez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'ana_garcia_lopez')
+),
+
+-- 21
+('inventario_area',
+    (SELECT numero_registro
+        FROM public.inventario_area ia
+        WHERE ia.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Laptop')
+          AND ia.id_area = (SELECT id_area FROM public.area WHERE nombre = 'Centro de Informática')),
+    'UPDATE',
+    'cantidad',
+    '8',
+    (SELECT cantidad::TEXT
+        FROM public.inventario_area ia
+        WHERE ia.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Laptop')
+          AND ia.id_area = (SELECT id_area FROM public.area WHERE nombre = 'Centro de Informática')),
+    '2025-11-13 14:55:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'carlos_perez_mendoza'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'carlos_perez_mendoza')
+),
+
+-- 22
+('inventario_area',
+    (SELECT numero_registro
+        FROM public.inventario_area ia
+        WHERE ia.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Equipo de sonido')
+          AND ia.id_area = (SELECT id_area FROM public.area WHERE nombre = 'Medios Audiovisuales')),
+    'UPDATE',
+    'cantidad',
+    '1',
+    (SELECT cantidad::TEXT
+        FROM public.inventario_area ia
+        WHERE ia.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Equipo de sonido')
+          AND ia.id_area = (SELECT id_area FROM public.area WHERE nombre = 'Medios Audiovisuales')),
+    '2025-11-13 17:35:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'lucia_martinez_ramirez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'lucia_martinez_ramirez')
+),
+
+-- 23
+('inventario_area',
+    55555,
+    'DELETE',
+    NULL,
+    NULL,
+    NULL,
+    '2025-11-13 21:10:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'ana_garcia_lopez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'ana_garcia_lopez')
+),
+
+-- 24
+('inventario_recinto',
+    (SELECT numero_registro
+        FROM public.inventario_recinto ir
+        WHERE ir.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Videoproyector')
+          AND ir.id_recinto = (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio Mtro. Carlos Pérez del Toro')),
+    'INSERT',
+    'cantidad',
+    'NULL',
+    (SELECT cantidad::TEXT
+        FROM public.inventario_recinto ir
+        WHERE ir.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Videoproyector')
+          AND ir.id_recinto = (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio Mtro. Carlos Pérez del Toro')),
+    '2025-11-14 07:50:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'vximenez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'vximenez')
+),
+
+-- 25
+('inventario_recinto',
+    (SELECT numero_registro
+        FROM public.inventario_recinto ir
+        WHERE ir.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Videoproyector')
+          AND ir.id_recinto = (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio Mtro. Carlos Pérez del Toro')),
+    'UPDATE',
+    'cantidad',
+    '1',
+    (SELECT cantidad::TEXT
+        FROM public.inventario_recinto ir
+        WHERE ir.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Videoproyector')
+          AND ir.id_recinto = (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio Mtro. Carlos Pérez del Toro')),
+    '2025-11-14 10:05:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'wyanez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'wyanez')
+),
+
+-- 26
+('inventario_recinto',
+    (SELECT numero_registro
+        FROM public.inventario_recinto ir
+        WHERE ir.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Videoproyector')
+          AND ir.id_recinto = (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio Mtro. Carlos Pérez del Toro')),
+    'UPDATE',
+    'activo',
+    'false',
+    (SELECT CASE WHEN activo THEN 'true' ELSE 'false' END
+        FROM public.inventario_recinto ir
+        WHERE ir.id_equipamiento = (SELECT id_equipamiento FROM public.equipamiento WHERE nombre = 'Videoproyector')
+          AND ir.id_recinto = (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio Mtro. Carlos Pérez del Toro')),
+    '2025-11-14 13:25:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'zbautista'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'zbautista')
+),
+
+-- 27
+('inventario_recinto',
+    44444,
+    'DELETE',
+    NULL,
+    NULL,
+    NULL,
+    '2025-11-14 16:40:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'yacosta'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'yacosta')
+),
+
+-- 28
+('usuario',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'gnavarro'),
+    'UPDATE',
+    'celular',
+    '5588009999',
+    (SELECT celular FROM public.usuario WHERE nombre_usuario = 'gnavarro'),
+    '2025-11-14 20:55:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'gnavarro'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'gnavarro')
+),
+
+-- 29
+('evento',
+    (SELECT id_evento FROM public.evento WHERE nombre = 'Seminario de Diseño de Estrategia Competitiva'),
+    'UPDATE',
+    'estatus',
+    'pendiente',
+    (SELECT estatus FROM public.evento WHERE nombre = 'Seminario de Diseño de Estrategia Competitiva'),
+    '2025-11-15 08:10:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'dvega'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'dvega')
+),
+
+-- 30
+('recinto',
+    (SELECT id_recinto FROM public.recinto WHERE nombre = 'Auditorio C.P. Alfonso Ochoa Ravizé'),
+    'UPDATE',
+    'aforo',
+    '150',
+    (SELECT aforo FROM public.recinto WHERE nombre = 'Auditorio C.P. Alfonso Ochoa Ravizé'),
+    '2025-11-15 11:30:00',
+    (SELECT id_usuario FROM public.usuario WHERE nombre_usuario = 'esanchez'),
+    (SELECT id_puesto FROM public.usuario WHERE nombre_usuario = 'esanchez')
+);
+
 
 COMMIT;
