@@ -8,7 +8,6 @@ import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.idk.fca_auditorios.common.ZipService;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -21,14 +20,12 @@ public class PonenteController {
   private final JdbcTemplate jdbc;
   private final PdfService pdf;
   private final LocalStorageService storage;
-  private final ZipService zipService;
 
   public PonenteController(PonenteRepository repo, JdbcTemplate jdbc, PdfService pdf,
-                         LocalStorageService storage, ZipService zipService) {
-    this.repo = repo; this.jdbc = jdbc; this.pdf = pdf; this.storage = storage; this.zipService = zipService;
+                         LocalStorageService storage) {
+    this.repo = repo; this.jdbc = jdbc; this.pdf = pdf; this.storage = storage;
     this.storage.ensureDirs(); // ✅ ahora 'storage' se usa
   }
-
 
   @GetMapping
   public List<Map<String,Object>> list(@RequestParam(required = false) String q,
@@ -137,50 +134,8 @@ public class PonenteController {
         .body(resource);
   }
 
-  @PostMapping("/descargar-semblanzas")
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
-  public ResponseEntity<Resource> descargarSemblanzas(@RequestBody Map<String,Object> body) throws Exception {
-      List<?> idsRaw = (List<?>) body.getOrDefault("ids", List.of());
-  List<Integer> ids = new java.util.ArrayList<>();
-  for (Object o : idsRaw) {
-    ids.add(Integer.valueOf(String.valueOf(o)));
-  }
-  if (ids.isEmpty()) return ResponseEntity.status(400).build();
 
-  if (ids.isEmpty()) return ResponseEntity.status(400).build();
-  
-  List<java.nio.file.Path> archivos = new ArrayList<>();
-  for (Integer idPonente : ids) {
-    Map<String,Object> s = jdbc.queryForMap(
-        "SELECT archivo FROM semblanza WHERE id_ponente=? LIMIT 1",
-        idPonente
-    );
-    String archivo = (s != null && s.get("archivo") != null)
-        ? String.valueOf(s.get("archivo"))
-        : null;
-
-    if (archivo == null || !java.nio.file.Files.exists(java.nio.file.Paths.get(archivo))) {
-      // Usamos el nombre estándar en snake_case
-      String nombrePdf = buildSemblanzaFileName(idPonente.longValue());
-      java.nio.file.Path pdfPath = pdf.generarSemblanza(idPonente.longValue(), nombrePdf);
-      archivos.add(pdfPath);
-
-      jdbc.update("""
-          INSERT INTO semblanza(id_ponente, archivo) VALUES (?,?)
-          ON CONFLICT (id_ponente) DO UPDATE SET archivo=EXCLUDED.archivo
-      """, idPonente, pdfPath.toString());
-    } else {
-      archivos.add(java.nio.file.Paths.get(archivo));
-    }
-  }
-
-  Resource zip = zipService.zip("semblanzas.zip", archivos);
-  return ResponseEntity.ok()
-      .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zip.getFilename())
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
-      .body(zip);
-  }
-
+  // Convierte texto a snake_case, minúsculas y sin acentos
   private String toSnakeCase(String input) {
     if (input == null) return "";
     String normalized = java.text.Normalizer.normalize(input, java.text.Normalizer.Form.NFD);
@@ -195,6 +150,11 @@ public class PonenteController {
     return snake.toLowerCase();
   }
 
+  /**
+   * Genera el nombre de archivo de la semblanza:
+   *   nombre_apellido_paterno_apellido_materno.pdf
+   * en snake_case y minúsculas.
+   */
   private String buildSemblanzaFileName(Long idPonente) {
     Map<String, Object> datos = jdbc.queryForMap(
         "SELECT nombre, apellido_paterno, apellido_materno FROM ponente WHERE id_ponente = ?",
@@ -209,7 +169,7 @@ public class PonenteController {
         + (apP != null && !apP.isBlank() ? "_" + apP : "")
         + (apM != null && !apM.isBlank() ? "_" + apM : "");
 
-    // Regla: <nombre>_<apellido_paterno>_<apellido_materno>.pdf en snake_case
+    // <nombre>_<apellido_paterno>_<apellido_materno>.pdf en snake_case
     return toSnakeCase(base) + ".pdf";
   }
 
@@ -290,6 +250,21 @@ public class PonenteController {
               "experiencia", experiencia,
               "grados", grados
       );
+  }
+
+  @GetMapping("/{id}/reconocimientos")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  public List<Map<String, Object>> listarReconocimientosPorPonente(@PathVariable Long id) {
+    return jdbc.queryForList("""
+        SELECT
+          e.id_evento   AS "idEvento",
+          e.nombre      AS "nombreEvento",
+          pa.reconocimiento
+        FROM participacion pa
+        JOIN evento e ON e.id_evento = pa.id_evento
+        WHERE pa.id_ponente = ?
+        ORDER BY e.fecha_inicio DESC, e.nombre
+        """, id);
   }
 
 }
