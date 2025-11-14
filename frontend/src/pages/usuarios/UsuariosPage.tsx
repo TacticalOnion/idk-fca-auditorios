@@ -32,6 +32,9 @@ import {
   DialogDescription,
   DialogFooter,
   DialogContent,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from '@ui/index'
 import { toast } from 'sonner'
 import axios from 'axios'
@@ -54,6 +57,33 @@ type CatalogosResponse = {
   puestos: CatalogoPuesto[]
 }
 
+type UsuarioRol =
+  | {
+      nombre: string
+    }
+  | string
+  | null
+
+type UsuarioArea =
+  | {
+      id: number
+      nombre: string
+    }
+  | string
+  | null
+
+type UsuarioPuesto =
+  | {
+      id?: number
+      nombre?: string
+      area?: {
+        id: number
+        nombre: string
+      } | null
+    }
+  | string
+  | null
+
 type Usuario = {
   id: number
   nombreUsuario: string
@@ -66,14 +96,10 @@ type Usuario = {
   correo?: string
   activo?: boolean
   fotoUsuario?: string | null
-  // estructuras flexibles porque el backend puede regresar string u objeto
-  rol?: { nombre: string } | string | null
-  puesto?:
-    | { id?: number; nombre?: string; area?: { id: number; nombre: string } | null }
-    | string
-    | null
-  idPuesto?: number // por si viene directo del backend
-  area?: { id: number; nombre: string } | string | null
+  rol?: UsuarioRol
+  puesto?: UsuarioPuesto
+  idPuesto?: number
+  area?: UsuarioArea
 }
 
 type CreateFormState = {
@@ -86,7 +112,7 @@ type CreateFormState = {
   celular: string
   correo: string
   rolNombre: string
-  idPuesto: string // guardamos como string para fácil binding con <Select>
+  idPuesto: string
 }
 
 type EditFormState = {
@@ -106,7 +132,7 @@ function Pill({ ok }: { ok: boolean }) {
   )
 }
 
-function getRolNombre(rol: Usuario['rol']): string {
+function getRolNombre(rol: UsuarioRol | undefined): string {
   if (!rol) return ''
   return typeof rol === 'string' ? rol : rol.nombre ?? ''
 }
@@ -146,16 +172,17 @@ export default function UsuariosPage() {
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null)
   const [nuevoActivo, setNuevoActivo] = useState<boolean | null>(null)
 
+  // Usuario para controlar qué popover de reset está abierto
+  const [resetUserIdOpen, setResetUserIdOpen] = useState<number | null>(null)
+
   const queryClient = useQueryClient()
 
-  // Usuarios
   const usuariosQuery = useQuery({
     queryKey: ['usuarios'],
     queryFn: async () => (await api.get<Usuario[]>('/api/usuarios')).data,
     retry: false,
   })
 
-  // Catálogos rol/puesto/área
   const catalogosQuery = useQuery({
     queryKey: ['usuarios', 'catalogos'],
     queryFn: async () => (await api.get<CatalogosResponse>('/api/usuarios/catalogos')).data,
@@ -180,12 +207,16 @@ export default function UsuariosPage() {
   )
 
   const resetPasswordMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const nueva = prompt('Nueva contraseña (texto plano, se guarda como SHA-256)') || ''
-      if (!nueva) throw new Error('Requerida')
+    mutationFn: async ({ id, nueva }: { id: number; nueva: string }) => {
+      if (!nueva) {
+        throw new Error('Requerida')
+      }
       await api.post(`/api/usuarios/${id}/reset-password`, null, { params: { nueva } })
     },
-    onSuccess: () => toast.success('Contraseña actualizada'),
+    onSuccess: () => {
+      toast.success('Contraseña actualizada')
+      setResetUserIdOpen(null)
+    },
     onError: (err: unknown) => {
       const msg = axios.isAxiosError(err)
         ? ((err.response?.data as { message?: string })?.message ?? 'No se pudo actualizar')
@@ -210,7 +241,6 @@ export default function UsuariosPage() {
         correo: createForm.correo,
         rol: createForm.rolNombre,
         idPuesto: Number(createForm.idPuesto),
-        // contrasenia opcional: si no se envía, backend usa un valor por defecto
       }
       await api.post('/api/usuarios', payload)
     },
@@ -327,7 +357,6 @@ export default function UsuariosPage() {
 
   return (
     <>
-      {/* Card + sheet para crear usuario */}
       <Sheet open={createOpen} onOpenChange={setCreateOpen}>
         <Card>
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -361,7 +390,7 @@ export default function UsuariosPage() {
                   <TH>Área</TH>
                   <TH>Rol</TH>
                   <TH>Activo</TH>
-                  <TH className="w-[150px]" />
+                  <TH className="w-[200px]" />
                 </TR>
               </THead>
               <TBody>
@@ -373,7 +402,10 @@ export default function UsuariosPage() {
                       ? getAreaNombreFromPuestoId(String(puestoId))
                       : typeof u.area === 'string'
                       ? u.area
-                      : (u.area as any)?.nombre ?? ''
+                      : u.area?.nombre ?? ''
+
+                  const puestoNombre =
+                    typeof u.puesto === 'string' ? u.puesto : u.puesto?.nombre ?? ''
 
                   return (
                     <TR key={u.id}>
@@ -387,11 +419,7 @@ export default function UsuariosPage() {
                       <TD>{u.telefono}</TD>
                       <TD>{u.celular}</TD>
                       <TD>{u.correo}</TD>
-                      <TD>
-                        {typeof u.puesto === 'string'
-                          ? u.puesto
-                          : (u.puesto as any)?.nombre ?? ''}
-                      </TD>
+                      <TD>{puestoNombre}</TD>
                       <TD>{areaNombre}</TD>
                       <TD>{rolNombre}</TD>
                       <TD>
@@ -408,13 +436,87 @@ export default function UsuariosPage() {
                         </button>
                       </TD>
                       <TD className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => resetPasswordMutation.mutate(u.id)}
+                        {/* Popover para resetear contraseña */}
+                        <Popover
+                          open={resetUserIdOpen === u.id}
+                          onOpenChange={(open) =>
+                            setResetUserIdOpen(open ? u.id : null)
+                          }
                         >
-                          Reset contraseña
-                        </Button>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              type="button"
+                              disabled={resetPasswordMutation.isPending}
+                            >
+                              Reset contraseña
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="end"
+                            className="w-72 p-4 space-y-3"
+                          >
+                            <div className="space-y-1">
+                              <Label htmlFor={`nuevaContrasena-${u.id}`}>
+                                Nueva contraseña
+                              </Label>
+                              <p className="text-xs text-muted-foreground">
+                                Se guardará como SHA-256 en el backend.
+                              </p>
+                            </div>
+                            <form
+                              className="space-y-3"
+                              onSubmit={(e) => {
+                                e.preventDefault()
+                                const formData = new FormData(e.currentTarget)
+                                const nueva = String(
+                                  formData.get('nuevaContrasena') ?? '',
+                                ).trim()
+
+                                if (!nueva) {
+                                  toast.error('La nueva contraseña es requerida')
+                                  return
+                                }
+
+                                resetPasswordMutation.mutate({
+                                  id: u.id,
+                                  nueva,
+                                })
+                              }}
+                            >
+                              <Input
+                                id={`nuevaContrasena-${u.id}`}
+                                name="nuevaContrasena"
+                                type="password"
+                                autoComplete="new-password"
+                                disabled={resetPasswordMutation.isPending}
+                              />
+                              <div className="flex justify-end gap-2 pt-1">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setResetUserIdOpen(null)}
+                                  disabled={resetPasswordMutation.isPending}
+                                >
+                                  Cancelar
+                                </Button>
+                                <Button
+                                  type="submit"
+                                  size="sm"
+                                  disabled={resetPasswordMutation.isPending}
+                                >
+                                  {resetPasswordMutation.isPending && (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  )}
+                                  Guardar
+                                </Button>
+                              </div>
+                            </form>
+                          </PopoverContent>
+                        </Popover>
+
                         <Button
                           variant="outline"
                           size="icon"
@@ -432,10 +534,10 @@ export default function UsuariosPage() {
           </CardContent>
         </Card>
 
-        {/* SheetContent: formulario crear */}
-        <SheetContent className="overflow-y-auto">
+        {/* Sheet CREAR USUARIO con padding y ancho mayor */}
+        <SheetContent className="overflow-y-auto p-6 sm:p-8 sm:max-w-xl">
           <SheetHeader>
-            <SheetTitle>Agregar usuario</SheetTitle>
+            <SheetTitle className='rounded-md bg-primary text-white text-center text-2xl p-3'>Agregar usuario</SheetTitle>
             <SheetDescription>Captura los datos del usuario.</SheetDescription>
           </SheetHeader>
           <form
@@ -463,7 +565,9 @@ export default function UsuariosPage() {
                   id="correo"
                   type="email"
                   value={createForm.correo}
-                  onChange={(e) => setCreateForm((f) => ({ ...f, correo: e.target.value }))}
+                  onChange={(e) =>
+                    setCreateForm((f) => ({ ...f, correo: e.target.value }))
+                  }
                   required
                 />
               </div>
@@ -472,7 +576,9 @@ export default function UsuariosPage() {
                 <Input
                   id="nombre"
                   value={createForm.nombre}
-                  onChange={(e) => setCreateForm((f) => ({ ...f, nombre: e.target.value }))}
+                  onChange={(e) =>
+                    setCreateForm((f) => ({ ...f, nombre: e.target.value }))
+                  }
                   required
                 />
               </div>
@@ -503,7 +609,9 @@ export default function UsuariosPage() {
                 <Input
                   id="rfc"
                   value={createForm.rfc}
-                  onChange={(e) => setCreateForm((f) => ({ ...f, rfc: e.target.value }))}
+                  onChange={(e) =>
+                    setCreateForm((f) => ({ ...f, rfc: e.target.value }))
+                  }
                   placeholder="Opcional"
                 />
               </div>
@@ -606,11 +714,11 @@ export default function UsuariosPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Sheet editar rol/puesto */}
+      {/* Sheet EDITAR USUARIO con padding y ancho mayor */}
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
-        <SheetContent className="overflow-y-auto">
+        <SheetContent className="overflow-y-auto p-6 sm:p-8 sm:max-w-xl">
           <SheetHeader>
-            <SheetTitle>Editar usuario</SheetTitle>
+            <SheetTitle className='rounded-md bg-primary text-white text-center text-2xl p-3'>Editar usuario</SheetTitle>
             <SheetDescription>
               Modifica el rol y el puesto del usuario seleccionado.
             </SheetDescription>
@@ -652,7 +760,9 @@ export default function UsuariosPage() {
               <Label>Rol</Label>
               <Select
                 value={editForm.rolNombre}
-                onValueChange={(value) => setEditForm((f) => ({ ...f, rolNombre: value }))}
+                onValueChange={(value) =>
+                  setEditForm((f) => ({ ...f, rolNombre: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un rol" />
@@ -670,7 +780,9 @@ export default function UsuariosPage() {
               <Label>Puesto</Label>
               <Select
                 value={editForm.idPuesto}
-                onValueChange={(value) => setEditForm((f) => ({ ...f, idPuesto: value }))}
+                onValueChange={(value) =>
+                  setEditForm((f) => ({ ...f, idPuesto: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un puesto" />
@@ -712,7 +824,6 @@ export default function UsuariosPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Dialog confirmar activar/desactivar */}
       <Dialog open={confirmActivoOpen} onOpenChange={setConfirmActivoOpen}>
         <DialogContent>
           <DialogHeader>
