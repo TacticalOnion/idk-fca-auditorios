@@ -67,3 +67,19 @@ export interface DetalleEvento {
   areas: AreaEvento[];
   equipamiento: EquipamientoEvento[];
 }
+
+export interface Periodo {
+  id: number
+  idTipoPeriodo: number
+  tipoPeriodo: string
+  fechaInicio: string
+  fechaFin: string
+}
+
+export interface Calendario {
+  id: number
+  semestre: string
+  semestreInicio: string
+  semestreFin: string
+  periodos: Periodo[]
+}
