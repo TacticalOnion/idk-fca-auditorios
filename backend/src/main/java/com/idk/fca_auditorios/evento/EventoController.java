@@ -31,7 +31,7 @@ public class EventoController {
   }
 
   @GetMapping
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('SUPERADMINISTRADOR')")
   public List<Map<String, Object>> list() {
     String sql = """
         SELECT
@@ -159,7 +159,7 @@ public class EventoController {
   }
 
   @PostMapping("/{id}/cancelar")
-  @PreAuthorize("hasRole('FUNCIONARIO')")
+  @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('FUNCIONARIO')")
   public ResponseEntity<?> cancelarEvento(@PathVariable("id") Integer id) {
 
     int updated = jdbc.update("""
@@ -178,7 +178,7 @@ public class EventoController {
   }
 
   @PostMapping("/{id}/deshacer")
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('FUNCIONARIO')")
   public Evento deshacer(@PathVariable Long id) {
     return service.deshacer(id);
   }
