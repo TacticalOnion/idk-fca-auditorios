@@ -64,3 +64,5 @@ export {
   CommandInput,
   CommandItem
 } from "@/components/ui/command"
+
+export {Label} from "@/components/ui/label"
