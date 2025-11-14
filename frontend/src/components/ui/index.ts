@@ -65,7 +65,8 @@ export {
   CommandEmpty,
   CommandGroup,
   CommandInput,
-  CommandItem
+  CommandItem,
+  CommandList
 } from "@/components/ui/command"
 
 export {Label} from "@/components/ui/label"
