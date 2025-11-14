@@ -38,9 +38,14 @@ public class UsuarioController {
   }
 
   @PostMapping("/{id}/reset-password")
-  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
-  public void resetPassword(@PathVariable Long id, @RequestParam @NotBlank String nueva) {
+  @PreAuthorize("hasAnyRole('SUPERADMINISTRADOR','ADMINISTRADOR')")
+  public Map<String, Object> resetPassword(
+      @PathVariable("id") Long id,
+      @RequestParam("nueva") @NotBlank String nueva
+  ) {
+    // Usa tu servicio de usuarios para aplicar el hash y guardar la contraseña
     service.resetPassword(id, nueva);
+    return Map.of("ok", true);
   }
 
   // ---------- Helpers para evitar “dead code” por checks de null ----------
@@ -135,4 +140,33 @@ public class UsuarioController {
     jdbc.update("UPDATE usuario SET activo=false WHERE id_usuario=?", id);
     return Map.of("ok", true);
   }
+
+  @GetMapping("/catalogos")
+  @PreAuthorize("hasRole('SUPERADMINISTRADOR')")
+  public Map<String, Object> catalogos() {
+    // Lista de roles
+    List<Map<String, Object>> roles = jdbc.queryForList(
+        "SELECT id_rol_usuario AS id, nombre " +
+        "FROM rol_usuario " +
+        "ORDER BY nombre"
+    );
+
+    // Lista de puestos con su área
+    List<Map<String, Object>> puestos = jdbc.queryForList(
+        "SELECT p.id_puesto AS id, " +
+        "       p.nombre     AS nombre, " +
+        "       a.id_area    AS idArea, " +
+        "       a.nombre     AS areaNombre " +
+        "FROM puesto p " +
+        "JOIN area a ON a.id_area = p.id_area " +
+        "WHERE p.activo = TRUE " +
+        "ORDER BY p.nombre"
+    );
+
+    return Map.of(
+        "roles", roles,
+        "puestos", puestos
+    );
+  }
+
 }
