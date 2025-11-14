@@ -16,7 +16,7 @@ export default function LoginPage(){
     try {
       await login(username, password)
       toast.success('Bienvenido')
-      nav('/eventos')
+      nav('/', { replace: true })
     } catch (err: unknown) {
       const msg =
         axios.isAxiosError(err)
