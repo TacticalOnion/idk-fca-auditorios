@@ -1,9 +1,13 @@
 package com.idk.fca_auditorios.inventario;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Array;
 import java.util.*;
 
 @RestController
@@ -11,42 +15,102 @@ import java.util.*;
 public class InventarioController {
 
   private final JdbcTemplate jdbc;
+  private final ObjectMapper objectMapper;
 
-  public InventarioController(JdbcTemplate jdbc) { this.jdbc = jdbc; }
-
+  public InventarioController(JdbcTemplate jdbc, ObjectMapper objectMapper) {
+    this.jdbc = jdbc;
+    this.objectMapper = objectMapper;
+  }
+  
   /** Consolida existencias totales por equipamiento y desglose (área/recinto). */
   @GetMapping("/general")
-  public List<Map<String,Object>> general() {
-    return jdbc.queryForList("""
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  public List<Map<String, Object>> getInventarioGeneral() {
+    String sql = """
       WITH inv_tot AS (
         SELECT id_equipamiento, SUM(cantidad) AS total
         FROM (
-          SELECT id_equipamiento, cantidad FROM inventario_area WHERE coalesce(activo,true)=true
+          SELECT id_equipamiento, cantidad
+          FROM inventario_area
+          WHERE coalesce(activo,true) = true
           UNION ALL
-          SELECT id_equipamiento, cantidad FROM inventario_recinto WHERE coalesce(activo,true)=true
-        ) t GROUP BY id_equipamiento
+          SELECT id_equipamiento, cantidad
+          FROM inventario_recinto
+          WHERE coalesce(activo,true) = true
+        ) t
+        GROUP BY id_equipamiento
       )
-      SELECT e.id_equipamiento as id, e.nombre, e.existencia,
+      SELECT e.id_equipamiento as id,
+             e.nombre,
+             e.existencia,
              coalesce(it.total,0) as total,
-             -- desglose
              ARRAY(
                SELECT json_build_object('area', a.nombre, 'cantidad', ia.cantidad)
                FROM inventario_area ia
-               JOIN area a ON a.id_area=ia.id_area
-               WHERE ia.id_equipamiento=e.id_equipamiento AND coalesce(ia.activo,true)=true
+               JOIN area a ON a.id_area = ia.id_area
+               WHERE ia.id_equipamiento = e.id_equipamiento
+                 AND coalesce(ia.activo,true) = true
                ORDER BY a.nombre
              ) as porArea,
              ARRAY(
                SELECT json_build_object('recinto', r.nombre, 'cantidad', ir.cantidad)
                FROM inventario_recinto ir
-               JOIN recinto r ON r.id_recinto=ir.id_recinto
-               WHERE ir.id_equipamiento=e.id_equipamiento AND coalesce(ir.activo,true)=true
+               JOIN recinto r ON r.id_recinto = ir.id_recinto
+               WHERE ir.id_equipamiento = e.id_equipamiento
+                 AND coalesce(ir.activo,true) = true
                ORDER BY r.nombre
              ) as porRecinto
       FROM equipamiento e
       LEFT JOIN inv_tot it ON it.id_equipamiento = e.id_equipamiento
       ORDER BY e.nombre
-    """);
+      """;
+
+    return jdbc.query(sql, (rs, rowNum) -> {
+      Map<String, Object> row = new LinkedHashMap<>();
+      row.put("id", rs.getLong("id"));
+      row.put("nombre", rs.getString("nombre"));
+      row.put("existencia", rs.getBoolean("existencia"));
+      row.put("total", rs.getInt("total"));
+
+      row.put("porArea",  parseJsonArrayColumn(rs.getArray("porArea")));
+      row.put("porRecinto", parseJsonArrayColumn(rs.getArray("porRecinto")));
+
+      return row;
+    });
+  }
+
+  /**
+   * Convierte una columna de tipo json[] de Postgres a List<Map<String,Object>>.
+   * Ejemplo de cada elemento: {"area":"Coordinación X","cantidad":3}
+   */
+  private List<Map<String, Object>> parseJsonArrayColumn(Array sqlArray) {
+    if (sqlArray == null) return List.of();
+    try {
+      Object[] arr = (Object[]) sqlArray.getArray();
+      List<Map<String, Object>> list = new ArrayList<>();
+
+      for (Object o : arr) {
+        String json;
+        if (o instanceof PGobject pg) {
+          // Para columnas json/jsonb el driver usualmente retorna PGobject
+          json = pg.getValue();
+        } else {
+          // Fallback: tomamos el toString()
+          json = String.valueOf(o);
+        }
+
+        // Cada elemento es un objeto con { "area"/"recinto", "cantidad" }
+        Map<String, Object> elem = objectMapper.readValue(
+            json,
+            new TypeReference<Map<String, Object>>() {}
+        );
+        list.add(elem);
+      }
+
+      return list;
+    } catch (Exception e) {
+      throw new RuntimeException("Error al leer columna de tipo json[]", e);
+    }
   }
 
   @GetMapping("/area")
