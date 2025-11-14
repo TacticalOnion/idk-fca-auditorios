@@ -28,6 +28,11 @@ function Sidebar() {
 
   const items: NavItem[] = [
     {
+      label: 'Usuarios',
+      to: '/usuarios',
+      roles: ['SUPERADMINISTRADOR'],
+    },
+    {
       label: 'Eventos',
       to: '/eventos',
       roles: ['ADMINISTRADOR', 'SUPERADMINISTRADOR'],
@@ -70,11 +75,6 @@ function Sidebar() {
     {
       label: 'Auditoría',
       to: '/auditoria',
-      roles: ['SUPERADMINISTRADOR'],
-    },
-    {
-      label: 'Usuarios',
-      to: '/usuarios',
       roles: ['SUPERADMINISTRADOR'],
     },
     {
