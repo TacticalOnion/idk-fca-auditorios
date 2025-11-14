@@ -50,3 +50,17 @@ export { Badge } from "@/components/ui/badge"
 export { Separator } from "@/components/ui/separator"
 
 export {Textarea} from "@/components/ui/textarea"
+
+export {
+  Popover,
+  PopoverTrigger,
+  PopoverContent
+} from "@/components/ui/popover"
+
+export {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem
+} from "@/components/ui/command"
