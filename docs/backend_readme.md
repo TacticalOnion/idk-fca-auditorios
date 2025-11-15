@@ -37,27 +37,40 @@ psql -U postgres -f database/01_crear_base_de_datos.sql
 ## 2. Crear tablas y cargar datos muestra
 Ejecuta el script segun tu SO en el directorio `backend` para cargar las variables de entorno de `.env`.
 
-🪟 Windows
----
-
+## 3. Cargar variables dde entorno
 ```shell
 .\load-env.ps1
 ```
 
-🐧 Linux/MacOS
----
+> **Importante**: necesitas tener permiso de ejecución de scripts
+> ```
+> Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
 
-```shell
-chmod +x load-env.sh
-. ./load-env.sh
+### Cargar directamente en la terminal
+Si no puedes ejectuar `load-env.ps1` la otra opción es declararlos directamente.
+
+```powershell
+set SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/fca_auditorios
+set SPRING_DATASOURCE_USERNAME=postgres
+set SPRING_DATASOURCE_PASSWORD=changeme
+
+set SPRING_SECURITY_USER_NAME=admin
+set SPRING_SECURITY_USER_PASSWORD=changme
+set SPRING_SECURITY_USER_ROLES=ADMIN
+
+set JWT_SECRET=<hash>
 ```
 
+> **Importante**: esta forma no ha sido probada
+
+## 4. Inicializar proyecto
 Inicializa spring-boot para crear las tablas y cargar los datos muestra.
 ```shell
 ./mvnw spring-boot:run
 ```
 
-## 3. Accede
+## 5. Accede
 Accede a `http://localhost:8080/` con las credenciales definidas en el archivo `.env` : [`SPRING_SECURITY_USER_NAM`, `SPRING_SECURITY_USER_PASSWORD`]
 
 # 📝 Notas extra
