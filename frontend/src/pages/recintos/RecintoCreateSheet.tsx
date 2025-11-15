@@ -10,54 +10,79 @@ type TipoRecinto = {
   nombre: string
 }
 
-export type Recinto = {
-  id: number
-  nombre: string
-  aforo: number
-  latitud: number
-  longitud: number
-  idTipoRecinto: number
-  croquis: string
-  activo?: boolean
-}
-
-export default function RecintoEditSheet({
-  recinto,
+export default function RecintoCreateSheet({
   onClose,
   onSaved
 }: {
-  recinto: Recinto
   onClose: () => void
   onSaved: () => void
 }) {
-  const [nombre, setNombre] = useState(recinto?.nombre ?? '')
-  const [aforo, setAforo] = useState(recinto?.aforo != null ? String(recinto.aforo) : '')
-  const [latitud, setLatitud] = useState(recinto?.latitud != null ? String(recinto.latitud) : '')
-  const [longitud, setLongitud] = useState(
-    recinto?.longitud != null ? String(recinto.longitud) : ''
-  )
-  const [idTipoRecinto, setIdTipoRecinto] = useState(
-    recinto?.idTipoRecinto != null ? String(recinto.idTipoRecinto) : ''
-  )
+  const [nombre, setNombre] = useState('')
+  const [aforo, setAforo] = useState('')
+  const [latitud, setLatitud] = useState('')
+  const [longitud, setLongitud] = useState('')
+  const [idTipoRecinto, setIdTipoRecinto] = useState('')
+  const [croquisFile, setCroquisFile] = useState<File | null>(null)
+  const [fotos, setFotos] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
-  const [deleting, setDeleting] = useState(false)
 
   const { data: tipos } = useQuery({
     queryKey: ['tipoRecinto'],
     queryFn: async () => (await api.get<TipoRecinto[]>('/api/recintos/tipos')).data
   })
 
+  function handleCroquisChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null
+    setCroquisFile(file)
+  }
+
+  function handleFotosChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const list = e.target.files
+    setFotos(list ? Array.from(list) : [])
+  }
+
   async function save() {
+    if (!nombre.trim()) {
+      toast.error('El nombre es obligatorio')
+      return
+    }
+    if (!aforo || Number(aforo) <= 0) {
+      toast.error('El aforo debe ser mayor a 0')
+      return
+    }
+    if (!latitud || !longitud) {
+      toast.error('Latitud y longitud son obligatorias')
+      return
+    }
+    if (!idTipoRecinto) {
+      toast.error('Selecciona un tipo de recinto')
+      return
+    }
+    if (!croquisFile) {
+      toast.error('Debes subir un croquis')
+      return
+    }
+    if (fotos.length < 4) {
+      toast.error('Debes subir al menos 4 fotografías')
+      return
+    }
+
     try {
       setSaving(true)
-      await api.patch(`/api/recintos/${recinto.id}`, {
-        nombre,
-        aforo: aforo ? Number(aforo) : null,
-        latitud: latitud ? Number(latitud) : null,
-        longitud: longitud ? Number(longitud) : null,
-        idTipoRecinto: idTipoRecinto ? Number(idTipoRecinto) : null
+      const form = new FormData()
+      form.append('nombre', nombre)
+      form.append('aforo', aforo)
+      form.append('latitud', latitud)
+      form.append('longitud', longitud)
+      form.append('idTipoRecinto', idTipoRecinto)
+      form.append('croquis', croquisFile)
+      fotos.forEach(f => form.append('fotografias', f))
+
+      await api.post('/api/recintos', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       })
-      toast.success('Recinto actualizado')
+
+      toast.success('Recinto creado')
       onSaved()
     } catch (err: unknown) {
       const msg = axios.isAxiosError(err)
@@ -66,23 +91,6 @@ export default function RecintoEditSheet({
       toast.error(msg)
     } finally {
       setSaving(false)
-    }
-  }
-
-  async function remove() {
-    if (!confirm('¿Eliminar (baja lógica) este recinto?')) return
-    try {
-      setDeleting(true)
-      await api.delete(`/api/recintos/${recinto.id}`)
-      toast.success('Recinto eliminado')
-      onSaved()
-    } catch (err: unknown) {
-      const msg = axios.isAxiosError(err)
-        ? (err.response?.data as { message?: string })?.message ?? 'Error al eliminar'
-        : 'Error al eliminar'
-      toast.error(msg)
-    } finally {
-      setDeleting(false)
     }
   }
 
@@ -95,7 +103,7 @@ export default function RecintoEditSheet({
     >
       <SheetContent className="overflow-y-auto p-6 sm:p-8 sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle className='rounded-md bg-primary text-white text-center text-2xl p-3' >Editar recinto</SheetTitle>
+          <SheetTitle className='rounded-md bg-primary text-white text-center text-2xl p-3'>Agregar recinto</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-3 mt-2">
@@ -152,19 +160,36 @@ export default function RecintoEditSheet({
           </div>
 
           <div>
-            <label className="text-sm font-medium">Croquis (solo lectura)</label>
-            <Input value={recinto.croquis ?? ''} readOnly />
+            <label className="text-sm font-medium">Croquis</label>
+            <input
+              type="file"
+              accept="image/*,.pdf"
+              onChange={handleCroquisChange}
+              className="mt-1 block w-full text-sm"
+            />
           </div>
 
-          <div className="flex justify-between pt-4">
-            <Button variant="destructive" onClick={remove} disabled={deleting}>
-              {deleting ? 'Eliminando...' : 'Eliminar'}
-            </Button>
-            <div className="flex gap-2">
-              <Button onClick={save} disabled={saving}>
-                {saving ? 'Guardando...' : 'Guardar'}
-              </Button>
+          <div>
+            <label className="text-sm font-medium">Fotografías (mínimo 4)</label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFotosChange}
+              className="mt-1 block w-full text-sm"
+            />
+            <div className="text-xs text-gray-500 mt-1">
+              Seleccionadas: {fotos.length}
             </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="ghost" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button onClick={save} disabled={saving}>
+              {saving ? 'Guardando...' : 'Guardar'}
+            </Button>
           </div>
         </div>
       </SheetContent>
