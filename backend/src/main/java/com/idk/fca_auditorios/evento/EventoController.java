@@ -290,7 +290,7 @@ public class EventoController {
   }
 
   @GetMapping("/{id}/detalle")
-  @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('FUNCIONARIO')")
+  @PreAuthorize("hasAnyRole('FUNCIONARIO','SUPERADMINISTRADOR','ADMINISTRADOR')")
   public Map<String, Object> detalle(@PathVariable("id") Long id) {
     // ── 1) Datos principales del evento (evento.nombre, categoria, megaEvento, etc.)
     Map<String, Object> evento = jdbc.queryForMap("""
@@ -588,7 +588,7 @@ private void insertarPonentes(Integer idEvento, EventoRequest req) {
 
 
   @PostMapping("/api/eventos")
-  @PreAuthorize("hasRole('FUNCIONARIO')")
+  @PreAuthorize("hasAnyRole('FUNCIONARIO','SUPERADMINISTRADOR','ADMINISTRADOR')")
   public ResponseEntity<?> crearEvento(@RequestBody EventoRequest req) {
 
       try {
@@ -656,7 +656,7 @@ private void insertarPonentes(Integer idEvento, EventoRequest req) {
   }
 
   @PutMapping("/api/eventos/{id}")
-  @PreAuthorize("hasRole('FUNCIONARIO')")
+  @PreAuthorize("hasAnyRole('FUNCIONARIO','SUPERADMINISTRADOR','ADMINISTRADOR')")
   public ResponseEntity<?> actualizarEvento(
           @PathVariable Integer id,
           @RequestBody EventoRequest req
